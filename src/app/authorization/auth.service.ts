@@ -108,14 +108,12 @@ export class AuthService {
 
     createNewUser(newUserData, userType) {
 
-        //create user data object
-        const userData = newUserData;
-        userData.role = userType;
+        newUserData.role = userType;
 
-        this.http.post<{token: string, expiresIn: number, userData: any}>("http://localhost:3000/api/user/signup", userData).subscribe(
+        this.http.post<{token: string, expiresIn: number, newUserData: any}>("http://localhost:3000/api/user/signup", newUserData).subscribe(
         {
             next: (response) => {
-                this.setToken(response);
+                this.loginUser(newUserData);
             },
             error: (error) => {
                 this.authStatusListener.next(false);

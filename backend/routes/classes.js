@@ -8,8 +8,8 @@ const checkInClass = require("../middleware/check_in_class");
 const codeSymbols = "abcdefghijklmnopqrstuvwxyz0123456789";
 
 //CLASSES:
-// for /classes alone, have GET (all classes for a particular teacher), POST (creates a new class for a teacher)
-// for /classes/:code, have GET, PUT, DELETE
+// for /classes alone, have GET (all classes for a particular teacher or student), GET with all units and such (only teachers), POST (creates a new class for a teacher)
+// for /classes/:id, have GET, PUT, DELETE
 
 //generates random 6 digit code
 function generateRandCode() {
@@ -24,60 +24,78 @@ function generateRandCode() {
 }
 
 //get all classes for a particular teacher or student
-router.get("", checkAuth, async (req, res, next) => {
+//check auth
+router.get("", async (req, res, next) => {
   const role = req.userData.role;
-  let sql;
 
-  if (role === "teacher") {
-    sql = "SELECT * FROM classes WHERE teacher_id=" + req.userData.id;
-  } else if (role === "student") {
-    sql = "CALL Get_Student_Classes_SP(" + req.userData.id + ")";
+  let sql;
+  if(role === "teacher") {
+    sql = `CALL GetTeacherClasses(${req.userData.id})`
+  }
+  else if(role === "student") {
+    sql =  `GetStudentClasses(${req.userData.id})`
   }
 
   await dbConnection(
     async (conn) => {
-      response = await conn.query(sql);
+      let [classes, teacherNames] = (await conn.query(sql))[0];
+      console.log(teacherNames);
 
-      res.status(200).json({
-        classes: role === "teacher" ? response[0] : response[0][0],
-      });
+      teacherNames.forEach(({id, teacher_name}) => {
+        let rightClass = classes.find((classInfo) => {return classInfo.id === id});
+        if(!rightClass.teacherNames) {
+          rightClass.teacherNames = [teacher_name];
+        }
+        else {
+          rightClass.teacherNames.push(teacher_name);
+        }
+      })
+      
+      return res.status(200).json(classes);
     },
-    res,
-    401,
-    "Error retrieving your classes. Please try again later."
+    res, 500, "Error retrieving your classes. Please try again later."
   );
 });
 
-//get a single class by code
-router.get("/:code", checkAuth, async (req, res, next) => {
+
+//get a single class by id (retrieve full content, with units and problems and lessons within them?)
+//check auth, check if in class; and if approved for students; check if class exists beforehand
+router.get("/:class_id", async (req, res, next) => {
+
   await dbConnection(
     async (conn) => {
-      const role = req.userData.role;
-      let sql = "SELECT * FROM classes WHERE code='" + req.params.code + "'";
-      let classData = (await conn.query(sql))[0];
 
-      if (classData.length === 0) {
-        return res.status(401).json({ message: "The class does not exist." });
+      //get class info
+      let sql = `SELECT * FROM classes WHERE id=${req.params.class_id}`;
+      let classData = (await conn.query(sql))[0][0];
+
+      //all units ordered by the unit_mapping
+      const unitsMapping = classData.units_mapping.join(", ");
+      sql = `SELECT * FROM units WHERE id IN (${unitsMapping}) ORDER BY FIELD(id, ${unitsMapping})`;
+      let unitsData = (await conn.query(sql))[0];
+
+      //for every unit, retrieve all the problems and lessons within it and order them according to the content-mapping
+      for(const unit of unitsData) {
+
+        //get all lessons and problems for this unit
+        const lessonsData = (await conn.query(`SELECT * FROM lessons WHERE id IN (SELECT lesson_id FROM unit_lessons WHERE unit_id = ${unit.id})`))[0]
+        const problemsData = (await conn.query(`SELECT * FROM problems WHERE id IN (SELECT problem_id FROM unit_problems WHERE unit_id = ${unit.id})`))[0]
+
+        //first store all problem and lesson ids in hash map with their respective objects
+        const hashMap = new Map();
+        lessonsData.forEach((lesson) => {hashMap.set("Lesson:" + lesson.id, lesson)});
+        problemsData.forEach((problem) => {hashMap.set("Problem:" + problem.id, problem)});
+
+        //now for each mapping, we store the respective object in a content array
+        unit.content = [];
+        unit.content_mapping.forEach((mappingId) => {unit.content.push(hashMap.get(mappingId))});
+
       }
-
-      //only if the student is approved, let them access class, else they can still view classes
-      if (role === "teacher" && classData[0].teacher_id !== req.userData.id) {
-        throw new Error();
-      } else if (role === "student") {
-        sql =
-          "SELECT * FROM class_students WHERE student_id=" +
-          req.userData.id +
-          " AND class_id=" +
-          classData[0].id;
-        if ((await conn.query(sql))[0].length === 0) {
-          throw new Error();
-        }
-      }
-
       res.status(200).json({
-        classData: classData[0],
+        classData: classData,
+        classUnits: unitsData
       });
-    },
+    }, 
     res,
     401,
     "You do not have access to this class."
@@ -85,7 +103,8 @@ router.get("/:code", checkAuth, async (req, res, next) => {
 });
 
 //POST request handler to create new classes
-router.post("", checkAuth, checkTeacher, async (req, res, next) => {
+//check if teacher and authenticated
+router.post("", async (req, res, next) => {
   await dbConnection(
     async (conn) => {
       let validCodeFound = false;
@@ -96,8 +115,7 @@ router.post("", checkAuth, checkTeacher, async (req, res, next) => {
         code = generateRandCode();
 
         //check if code exists already
-        const sql =
-          "SELECT EXISTS (SELECT * FROM classes WHERE code='" + code + "')";
+        const sql = "SELECT EXISTS (SELECT * FROM classes WHERE code='" + code + "')";
 
         let response = await conn.query(sql);
 
@@ -105,24 +123,30 @@ router.post("", checkAuth, checkTeacher, async (req, res, next) => {
           validCodeFound = true;
         }
       }
+      console.log(req.body);
 
       //create an object for the class
       const newClassData = {
         code: code,
         name: req.body.name,
-        teacher_id: req.userData.id,
-        teacher_name: req.body.teacher_name,
+        units_mapping: JSON.stringify([])
       };
 
       //insert into table
+      //also add teacher as an editing rights person for this
       let sql = "INSERT INTO classes SET ?";
       await conn.query(sql, newClassData);
-      sql = "SELECT * FROM classes WHERE code=?";
-      const classData = (await conn.query(sql, newClassData.code))[0][0];
+      const {id} = (await conn.query(`SELECT id FROM classes WHERE code="${code}"`))[0][0];
+      const classOwnerData = {
+        teacher_id: req.userData.id,
+        teacher_name: req.body.teacherName,
+        class_id: id,
+        rights: "editing"
+      }
+      sql = "INSERT INTO class_owners SET ?"
+      await conn.query(sql, classOwnerData);
 
-      res.status(201).json({
-        classData: classData,
-      });
+      return res.status(201).json({message: "Succesfully created class"});
     },
     res,
     401,
@@ -131,26 +155,22 @@ router.post("", checkAuth, checkTeacher, async (req, res, next) => {
 });
 
 // PUT to modify existing class
+//check if teacher authenticated and in class and editing rights
+//also check if units mapping is still the same
 router.put(
   "/:class_id",
-  checkAuth,
-  checkTeacher,
-  checkInClass,
   async (req, res, next) => {
+    // req.userData = {id: 11};
     await dbConnection(
       async (conn) => {
         const classData = {
           name: req.body.name,
-          teacher_name: req.body.teacher_name,
-          problem_set_array: JSON.stringify(req.body.problem_set_array),
+          code: req.body.code,
+          units_mapping: JSON.stringify(req.body.unitsMapping),
         };
 
         //check if code DNE for all records (except possibly the current one)
-        let sql =
-          "SELECT * FROM classes WHERE id!=" +
-          req.params.class_id +
-          " AND code=" +
-          req.body.code;
+        let sql = `SELECT * FROM classes WHERE id!= ${req.params.class_id} AND code="${req.body.code}"`;
         response = await conn.query(sql);
         if (response[0].length !== 0) {
           return res
@@ -161,12 +181,14 @@ router.put(
             });
         }
 
-        userData.code = req.body.code;
-
         //update the class
         sql = "UPDATE classes SET ? WHERE id=" + req.params.class_id;
         await conn.query(sql, classData);
-        res.status(200).json({ message: "Succesfully modified class." });
+
+        //update teacher owner name
+        sql = `UPDATE class_owners SET teacher_name = "${req.body.teacherName}" WHERE teacher_id = ${req.userData.id} AND class_id = ${req.params.class_id}`;
+        await conn.query(sql);
+        return res.status(200).json({ message: "Succesfully modified class." });
       },
       res,
       401,
@@ -175,17 +197,14 @@ router.put(
   }
 );
 
+//check if an authenticated teacher is in the class and has editing rights
 router.delete(
   "/:class_id",
-  checkAuth,
-  checkTeacher,
-  checkInClass,
   async (req, res, next) => {
     await dbConnection(
       async (conn) => {
-        const sql = "DELETE FROM classes WHERE id=" + req.params.class_id;
+        let sql = "DELETE FROM classes WHERE id=" + req.params.class_id;
         await conn.query(sql);
-
         res.status(200).json({ message: "Successfully deleted class." });
       },
       res,
