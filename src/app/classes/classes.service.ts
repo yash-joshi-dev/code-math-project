@@ -19,11 +19,12 @@ export class ClassesService {
 
     }
 
-    editClass(name: string, teacherName: string, classId: number) {
+    editClass(name: string, teacherName: string, classId: number, code: string) {
 
         const newClassData = {
             name: name,
-            teacher_name: teacherName
+            teacher_name: teacherName,
+            code: code
         }
 
         return this.http.put<{classData: Class}>("http://localhost:3000/api/classes/" + classId, newClassData);

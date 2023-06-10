@@ -66,7 +66,7 @@ router.post("/login", async (req, res, next) => {
         }
 
         //now get full data without password
-        sql = "SELECT id, name, email_address, bio, role, user_name FROM users WHERE email_address = '" + req.body.email_address + "'";
+        sql = "SELECT id, name, email_address, role, user_name FROM users WHERE email_address = '" + req.body.email_address + "'";
         response = await conn.query(sql);
 
         //create a new token
@@ -106,7 +106,7 @@ router.get("/:user_id", checkAuth, checkTeacher, async (req, res, next) => {
             userData: response[0][0]
         })
 
-    }, res, )
+    }, res, 500, "Some weird error occurred while getting the user.")
 
 })
 

@@ -1,9 +1,14 @@
 const mysql = require("mysql2/promise");
-const settings = require('./config.json');
+const settings = {
+    "connectionLimit": 10,
+    "host": "localhost",
+    "user": "root",
+    "password": process.env.MYSQL_DB_PASSWORD,
+    "database": "code_math_db"
+}
+
 //var pool = mysql.createPool(process.env.DB_POOL_CONFIG);
 var pool = mysql.createPool(settings);
-//console.log(process.env);
-//console.log(settings);
 
 async function getConnection(callback, res, errStatus, errorMessage) {
 

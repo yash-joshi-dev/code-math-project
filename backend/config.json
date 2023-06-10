@@ -1,7 +1,0 @@
-{
-    "connectionLimit": 10,
-    "host": "localhost",
-    "user": "root",
-    "password": "tom$Jerry923",
-    "database": "code_math_db"
-}
