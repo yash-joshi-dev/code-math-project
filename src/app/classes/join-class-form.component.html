@@ -1,0 +1,10 @@
+<h1 mat-dialog-title>Join Class</h1>
+<div mat-dialog-content>
+  <mat-form-field appearance="fill">
+    <mat-label>Class Code</mat-label>
+    <input matInput [(ngModel)]="classCode">
+  </mat-form-field>
+</div>
+<div mat-dialog-actions>
+  <button mat-button [mat-dialog-close]="classCode" [disabled]="!classCode || classCode.length < 6">Join!</button>
+</div>

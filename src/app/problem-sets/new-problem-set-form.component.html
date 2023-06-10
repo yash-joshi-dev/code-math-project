@@ -1,0 +1,13 @@
+<h1 mat-dialog-title>{{data.action}} problem set:</h1>
+<form [formGroup]="problemSetForm" (ngSubmit)="onSubmit()">
+  <div mat-dialog-content>
+    <mat-form-field style="width:300px" appearance="fill">
+      <mat-label>Problem Set Name</mat-label>
+      <input matInput formControlName="set_name">
+    </mat-form-field>
+    <mat-checkbox labelPosition="before" formControlName="released" style="margin: 10px">Release to students?</mat-checkbox>
+  </div>
+  <div mat-dialog-actions>
+    <button mat-button  type="submit" [disabled]="!problemSetForm.valid">Save!</button>
+  </div>
+</form>

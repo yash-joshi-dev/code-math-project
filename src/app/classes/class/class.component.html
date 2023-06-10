@@ -1,0 +1,22 @@
+<!-- <nav class="navbar navbar-expand-sm sticky-top navbar-light bg-light">
+    <p class="navbar-brand">{{classData.name}}</p>
+    <div class="container-fluid">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#classNavBar">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="classNavBar">
+            <ul class="navbar-nav me-auto">
+              
+              <li class="nav-item">
+                <a class="nav-link" routerLink="class-list" routerLinkActive="active">Class List</a>
+              </li>
+            </ul>
+        </div>
+    </div>
+</nav> -->
+
+<app-class-header [classData]="classData"></app-class-header>
+<br>
+<div class="container" style="width: 54rem;">
+    <router-outlet></router-outlet>
+</div>

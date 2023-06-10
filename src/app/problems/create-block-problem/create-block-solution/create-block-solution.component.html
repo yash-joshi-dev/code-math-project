@@ -1,0 +1,18 @@
+
+<form [formGroup]="toolboxForm">
+    <h4>Select which blocks the student can see:</h4>
+    <mat-checkbox labelPosition="before" formControlName="allowMath" style="margin: 10px">Math</mat-checkbox>
+    <mat-checkbox labelPosition="before" formControlName="allowBoolean" style="margin: 10px">Logic</mat-checkbox>
+    <mat-checkbox labelPosition="before" formControlName="allowIfs" style="margin: 10px">If Blocks</mat-checkbox>
+    <mat-checkbox labelPosition="before" formControlName="allowLoops" style="margin: 10px">Loop Blocks</mat-checkbox>
+    <hr>
+    <button mat-raised-button color="primary" routerLink="../tests">Back</button>
+    <button mat-raised-button color="primary" [disabled]="!allowNext">Submit</button>
+</form>
+
+
+
+<h4>Code the solution below:</h4>
+<button mat-raised-button color="primary" (click)="onRunCode()">Run Code!</button>
+<button mat-raised-button color="primary" (click)="onSubmit()">Submit Code!</button>
+<div id="blocklyDiv"></div>

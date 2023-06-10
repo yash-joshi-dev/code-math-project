@@ -1,0 +1,24 @@
+<nav class="navbar navbar-expand-sm navbar-dark bg-dark">
+    <div class="container-fluid">
+      <a class="navbar-brand" routerLink="/">CodeMath</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mynavbar">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse justify-content-end" id="mynavbar">
+        <div>
+          <button class="btn btn-outline-success"  routerLink="/login" *ngIf="!userIsAuthenticated">Login</button>
+          <button class="btn btn-outline-primary" routerLink="/sign-up/student" *ngIf="!userIsAuthenticated">Sign-Up</button>
+          <div ngbDropdown class="dropdown" *ngIf="userIsAuthenticated">
+            <button ngbDropdownToggle mat-button color="accent" type="button" id="userSettingsDropdown" aria-expanded="false">
+          {{getName()}}
+          </button>
+            <ul ngbDropdownMenu aria-labelledby="userSettingsDropdown">
+              <li><a ngbDropdownItem routerLink="/classes" routerLinkActive="active">My Classes</a></li>
+              <li><a ngbDropdownItem>Profile</a></li>
+              <li><a ngbDropdownItem (click)="onLogout()">Logout</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>

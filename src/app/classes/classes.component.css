@@ -1,0 +1,9 @@
+.class-card {
+   max-width: 270px;
+   display: inline-block;
+   margin: 30px 30px;
+}
+
+.mat-card-image {
+    max-height: 150px;
+}

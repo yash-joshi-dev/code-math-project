@@ -1,0 +1,82 @@
+<form [formGroup]="testsForm">
+
+    <h5>Sample Tests:</h5>
+    <span >
+        <button mat-raised-button color="primary" (click)="onAddSampleTest()">Add Test</button>
+        <button mat-raised-button color="warn" (click)="onDeleteSampleTests()">
+            <span *ngIf="!samplesDeleteable">Delete</span>
+            <span *ngIf="samplesDeleteable">Stop Deleting</span>
+        </button>
+    </span>
+    <br>
+    <br>
+
+    <div [ngClass]="{deleteable: samplesDeleteable}" formArrayName="sample_tests" *ngFor="let control of sampleTests.controls; let i = index;">
+        <h6>Sample {{i + 1}}</h6>
+        <mat-form-field
+            (click)="onSampleTestClicked(i)"
+            appearance="fill" 
+            class="test"
+            [formArrayName]="i" 
+            *ngFor="let innerControls of getSampleTestRow(i); let j = index"
+        >
+            <mat-label *ngIf="j < inputNames.length">{{inputNames.at(j).get('name').value}}</mat-label>
+            <mat-label *ngIf="j >= inputNames.length">{{outputNames.at(j - inputNames.length).get('name').value}}</mat-label>
+            <input [pattern]="getPattern(inputNames.at(j).get('type').value)" *ngIf="j < inputNames.length" [appInputTypeDirective]="inputNames.at(j).get('type').value" matInput [formControlName]="j">
+            <input [pattern]="getPattern(outputNames.at(j - inputNames.length).get('type').value)" *ngIf="j >= inputNames.length" [appInputTypeDirective]="outputNames.at(j - inputNames.length).get('type').value" matInput [formControlName]="j">
+        </mat-form-field>
+    </div>
+
+    <hr>
+
+    <h5>Hidden Tests:</h5>
+    <span >
+        <button mat-raised-button color="primary" (click)="onAddHiddenTest()">Add Test</button>
+        <button mat-raised-button color="warn" (click)="onDeleteHiddenTests()">
+            <span *ngIf="!hiddenTestsDeleteable">Delete</span>
+            <span *ngIf="hiddenTestsDeleteable">Stop Deleting</span>
+        </button>
+    </span>
+    <br>
+    <br>
+
+    <div [ngClass]="{deleteable: hiddenTestsDeleteable}" formArrayName="hidden_tests" *ngFor="let control of hiddenTests.controls; let i = index;">
+        <h6>Hidden {{i + 1}}</h6>
+        <mat-form-field
+            (click)="onHiddenTestClicked(i)"
+            appearance="fill" 
+            class="test"
+            [formArrayName]="i" 
+            *ngFor="let innerControls of getHiddenTestRow(i); let j = index"
+        >
+            <mat-label *ngIf="j < inputNames.length">{{inputNames.at(j).get('name').value}}</mat-label>
+            <mat-label *ngIf="j >= inputNames.length">{{outputNames.at(j - inputNames.length).get('name').value}}</mat-label>
+            <input [pattern]="getPattern(inputNames.at(j).get('type').value)" *ngIf="j < inputNames.length" [appInputTypeDirective]="inputNames.at(j).get('type').value" matInput [formControlName]="j">
+            <input [pattern]="getPattern(outputNames.at(j - inputNames.length).get('type').value)" *ngIf="j >= inputNames.length" [appInputTypeDirective]="outputNames.at(j - inputNames.length).get('type').value" matInput [formControlName]="j">
+        </mat-form-field>
+    </div>
+
+    <hr>
+    <mat-form-field appearance="fill">
+        <mat-label>Number of Random Testcases to Generate:</mat-label>
+        <input matInput pattern="\d*" type="number" formControlName="random_tests_count">
+    </mat-form-field>
+    <!-- <h4>Please add ranges for the input variables:</h4> -->
+    <!-- <mat-form-field
+        appearance="fill"
+        formArrayName="ranges"
+        *ngFor="let control of ranges.controls; let i = index"
+    >
+        <mat-label>{{inputNames.at(i).get('name').value}}</mat-label>
+        <mat-select [formControlName]="i">
+            <mat-option>--</mat-option>
+            <mat-option *ngFor="let valueType of valueTypes" [value]="valueType.value">{{valueType.type}}</mat-option>
+            <mat-option value="number">Number</mat-option>
+            <mat-option value="string">String</mat-option>
+        </mat-select>
+    </mat-form-field> -->
+    <hr>
+
+    <button mat-raised-button color="primary" routerLink="../basic-info">Back</button>
+    <button mat-raised-button color="primary" [disabled]="testsForm.invalid" routerLink="../solution">Next</button>
+</form>

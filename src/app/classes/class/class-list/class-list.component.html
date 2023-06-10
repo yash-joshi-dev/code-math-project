@@ -1,0 +1,24 @@
+<div *ngIf="pendingStudents && pendingStudents.length > 0">
+    <h2>Pending Join Requests</h2>
+    <hr>
+    <ul class="list-group">
+        <li class="list-group-item d-flex justify-content-between align-items-center" *ngFor="let student of pendingStudents; let i = index" href="#">
+          {{student.name}}
+          <span class="float-left"><button mat-raised-button color="primary" (click)="onApprovePending(i)">Approve</button>
+          <button mat-raised-button color="warn" (click)="onRemoveStudent(i)">Decline</button></span>
+          </li>
+    </ul>
+    <hr>
+</div>
+
+<h2>Class List</h2>
+<hr>
+<h3 style="color: cadetblue;" *ngIf="!classStudents || classStudents.length === 0">You don't have any students yet!</h3>
+<div *ngIf="classStudents && classStudents.length > 0">
+    <ul class="list-group">
+        <a class="list-group-item d-flex justify-content-between align-items-center" *ngFor="let student of classStudents; let i = index" routerLink="./{{student.id}}">
+          {{i+1}}
+          <span class="">{{student.name}}</span>
+        </a>
+    </ul>
+</div>

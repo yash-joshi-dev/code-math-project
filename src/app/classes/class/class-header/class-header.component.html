@@ -1,0 +1,44 @@
+<!-- 
+<mat-toolbar color="primary">
+  <mat-toolbar-row>
+      <span>{{classData.name}}</span>
+      <span class="example-spacer"></span>
+      <div class="justify-content-end">
+      <button mat-button *ngIf="isTeacher" routerLink="./assignments">Assignments</button>
+      <button mat-button *ngIf="isTeacher" routerLink="./class-list">Class List</button>
+      </div>
+  </mat-toolbar-row>
+</mat-toolbar> -->
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <div class="container-fluid">
+      <div>
+        <a *ngIf="classData">{{classData.name}}</a>
+        <!-- <a>Teacher: {{classData.teacher_name}}</a>
+        <a>Code: {{classData.code}}</a> -->
+      </div>
+      <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+          <ul class="navbar-nav">
+              <li class="nav-item">
+                <button mat-button color="primary" *ngIf="isTeacher" routerLink="./assignments">Assignments</button>
+                <button mat-button color="primary" *ngIf="isTeacher" routerLink="./class-list">Class List</button>
+              </li>
+          </ul>
+      </div>
+  </div>
+</nav>
+
+<!-- 
+
+<div class="p-4 shadow-4 rounded-3" style="background-color: hsl(0, 0%, 94%);" *ngIf="classData">
+    <div class="container">
+      <h1 class="display-4">{{classData.name}}</h1>
+      <p class="lead">Teacher: {{classData.teacher_name}}</p>
+      <p class="lead">Code: {{classData.code}}</p>
+      <div>
+        <button mat-button color="primary" *ngIf="isTeacher" routerLink="./assignments">Assignments</button>
+        <button mat-button color="primary" *ngIf="isTeacher" routerLink="./class-list">Class List</button>
+      </div>
+    </div>
+  </div>
+  <br>
+  <br> -->

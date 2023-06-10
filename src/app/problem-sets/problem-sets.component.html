@@ -1,0 +1,37 @@
+<h1>Problem Sets:</h1>
+<hr>
+<button mat-button color="primary" (click)="onCreateProblemSet()" *ngIf="isTeacher">Create Problem Set</button>
+<h3 style="color:cadetblue;" *ngIf="!problemSets || problemSets.length === 0">You currently don't have any problem sets</h3>
+<div *ngIf="problemSets && problemSets.length > 0">
+    <mat-expansion-panel *ngFor="let problemSet of problemSets; let i = index">
+        <mat-expansion-panel-header>
+          <mat-panel-title>
+            {{problemSet.name}}
+          </mat-panel-title>
+          <!-- <mat-panel-description> -->
+                <app-edit-menu *ngIf="isTeacher" class="float-left" (editClick)="onEditProblemSet(i)" (deleteClick)="onDeleteProblemSet(i)"></app-edit-menu>
+          <!-- </mat-panel-description> -->
+        </mat-expansion-panel-header>
+        <p>Here shall be a histogram showing how many students have done how many problems</p>
+        <button mat-button color="primary" (click)="onCreateProblem()">Create Problem</button>
+        <h3 style="color: cadetblue;" *ngIf="!problemSet.problem_mapping || problemSet.problem_mapping.length === 0">You don't have any problems yet!</h3>
+        <div *ngIf="problemSet.problem_mapping && problemSet.problem_mapping.length > 0">
+            <ul class="list-group">
+                <a 
+                class="list-group-item d-flex justify-content-between align-items-center" 
+                *ngFor="let mapIndex of problemSet.problem_mapping; let j = index;" 
+                routerLink="./{{problemSet.problems[mapIndex].id}}"
+                >
+                    {{problemSet.problems[mapIndex].name}}
+                    <app-edit-menu 
+                    *ngIf="isTeacher" 
+                    class="float-left" 
+                    (editClick)="onEditProblem(problemSet.problems[mapIndex].id)" 
+                    (deleteClick)="onDeleteProblem(problemSet.problems[mapIndex].id)"></app-edit-menu>
+                </a>
+    
+            </ul>
+        </div>
+    
+    </mat-expansion-panel>
+    </div>

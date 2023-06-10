@@ -1,0 +1,13 @@
+{
+    "env": {
+        "DB_POOL_CONFIG": 
+        {
+            "connectionLimit": 10,
+            "host": "localhost",
+            "user": "root",
+            "password": "tom$Jerry923",
+            "database": "code_math_db"
+        },
+        "JWT_KEY":"sfjahuevi^^&*ohknsuihry384ujg834yuiokhellomysfbfuiy3euworldohgfejo7834u8r907435890473bg34y8yerhwieho3893y4@#$@$@#"
+    }
+}

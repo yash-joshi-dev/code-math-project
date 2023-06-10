@@ -1,0 +1,16 @@
+<h1 mat-dialog-title>{{data.action}} class:</h1>
+<form [formGroup]="classForm" (ngSubmit)="onSubmit()">
+  <div mat-dialog-content>
+    <mat-form-field style="width:300px" appearance="fill">
+      <mat-label>Class Name</mat-label>
+      <input matInput formControlName="class_name">
+    </mat-form-field>
+    <mat-form-field style="width:300px" appearance="fill">
+      <mat-label>Preferred Teacher Name (what students will see)</mat-label>
+      <input matInput formControlName="teacher_name">
+    </mat-form-field>
+  </div>
+  <div mat-dialog-actions>
+    <button mat-button  type="submit" [disabled]="!classForm.valid">Save!</button>
+  </div>
+</form>

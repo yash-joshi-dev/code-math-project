@@ -1,0 +1,61 @@
+<div class="container-fluid">
+    <div class="row">
+        <mat-spinner *ngIf="isLoading"></mat-spinner>
+        <div class="col-sm-5 mx-auto" *ngIf="!isLoading">
+            <div style="text-align: center">
+                <h1>{{title}}</h1>
+            </div>
+            <form [formGroup]="signUpForm" (ngSubmit)="onSubmit()">
+                <div class="form-group">
+                    <label for="first_name">First Name:</label>
+                    <input 
+                        type="text"
+                        id="first_name"
+                        class="form-control"
+                        formControlName="first_name"
+                    >
+                    <p *ngIf="!signUpForm.get('first_name').valid && signUpForm.get('first_name').touched">
+                        <span *ngIf="signUpForm.get('first_name').errors['nameLengthIsTooLong']">Name length must be less than 50 characters.</span>
+                        <span *ngIf="signUpForm.get('first_name').errors['required']">This field is required.</span>
+                    </p>
+                </div>
+                <div class="form-group">
+                    <label for="last_name">Last Name:</label>
+                    <input 
+                        type="text"
+                        id="last_name"
+                        class="form-control"
+                        formControlName="last_name"
+                    >
+                    <p *ngIf="!signUpForm.get('last_name').valid && signUpForm.get('last_name').touched">
+                        <span *ngIf="signUpForm.get('last_name').errors['nameLengthIsTooLong']">Name length must be less than 50 characters.</span>
+                        <span *ngIf="signUpForm.get('last_name').errors['required']">This field is required.</span>
+                    </p>                </div>
+                <div class="form-group">
+                    <label for="email_address">Email:</label>
+                    <input 
+                        type="text"
+                        id="email_address"
+                        class="form-control"
+                        formControlName="email_address"
+                    >
+                    <p *ngIf="!signUpForm.get('email_address').valid && signUpForm.get('email_address').touched">Please enter a valid email.</p>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password:</label>
+                    <input
+                        type="password"
+                        id="password"
+                        class="form-control"
+                        formControlName="password"
+                    >
+                    <p *ngIf="!signUpForm.get('password').valid && signUpForm.get('password').touched">Please enter a password.</p>
+                </div>
+                <button class="btn btn-primary" type="submit" [disabled]="!signUpForm.valid">Sign-Up</button>
+            </form>
+            <hr>
+            <button class="btn btn-success" type="button" [routerLink]="['/sign-up', otherType]">Sign up as a {{otherType}} instead!</button>
+
+        </div>
+    </div>
+</div>

@@ -1,0 +1,15 @@
+<div class="jumbotron jumbotron-fluid m-0 p-0" style="background-color:rgb(20, 91, 91); background-size: cover;">
+  <div class="container text-center text-white">
+    <h1 class="display-3">Code-Math</h1>
+    <p class="lead">The best place to learn how to code and solve math, at the same time!!!</p>
+  </div>
+</div>
+
+<div class="example-box" cdkDrag>
+    Drag me around
+  </div>
+
+  <div cdkDropList class="example-list" (cdkDropListDropped)="drop($event)">
+    <div class="example-box" *ngFor="let movie of movies" cdkDrag>{{movie}}</div>
+  </div>
+  
