@@ -41,7 +41,16 @@ router.post("/", async (req, res, next) => {
     const sql = "INSERT INTO units SET ?";
 
     await dbConnection(async (conn) => {
-        await conn.query(sql, newUnitData);
+        const newUnitId = (await conn.query(sql, newUnitData))[0].insertId;
+
+        //add to unit_owners table
+        const newRecordData = {
+            unit_id: newUnitId,
+            teacher_id: req.userData.id,
+        }
+
+        await conn.query(`INSERT INTO unit_owners SET ?`, newRecordData);
+
         req.status(201).json({message: "Successfully created unit!"});
     }, res, 500, "Could not create unit.")
 
@@ -114,6 +123,14 @@ router.post("/:class_id", async (req, res, next) => {
         //create new unit
         newUnitId = (await conn.query(sql, newUnitData))[0].insertId;
 
+        //add new record into unit owner table
+        const newRecordData = {
+            unit_id: newUnitId,
+            teacher_id: req.userData.id,
+        }
+
+        await conn.query(`INSERT INTO unit_owners SET ?`, newRecordData);
+
         //add unit to unit mapping for class
         sql = `SELECT units_mapping FROM classes WHERE id = ${req.params.class_id}`
         const unitsMapping = (await conn.query(sql))[0][0].units_mapping;
@@ -155,6 +172,7 @@ router.put("/:unit_id", async (req, res, next) => {
 
             //now get all classes that this unit is in
             const classIds = (await conn.query(`SELECT class_id FROM class_units WHERE unit_id = ${req.params.unit_id}`))[0].map((item) => {return item.class_id});
+            let newStudentProgressRecords = []
 
             for(const classId of classIds) {
                 //get all student ids for each class
@@ -171,10 +189,13 @@ router.put("/:unit_id", async (req, res, next) => {
                             status: "unattempted",
                             prev_solutions: JSON.stringify([])
                         }
-                        await conn.query(`INSERT INTO student_progress SET ?`, newRecordData);
+                        newStudentProgressRecords.push(newRecordData);
                     }
                 }
             }
+
+            //insert all new records
+            await conn.query(`INSERT INTO student_progress SET ?`, newStudentProgressRecords);
             
         }
 
@@ -187,6 +208,20 @@ router.put("/:unit_id", async (req, res, next) => {
 router.delete("/:unit_id", checkAuth, checkTeacher, checkInClass, async (req, res, next) => {
 
     await dbConnection(async (conn) => {
+
+        //delete from units mapping array in any classes records that had this as a unit
+        //first get all classes which had this as a unit
+        const unitClasses = (await conn.query(`SELECT * FROM classes WHERE id IN (SELECT class_id FROM class_units WHERE unit_id = ${req.params.unit_id})`))[0];
+
+        //for each class, delete the unit from the units_mapping array
+        for(let unitClass of unitClasses) { 
+
+            //can check if index is -1, but shouldn't be EVER because 
+            unitClass.units_mapping.splice(unitClass.units_mapping.indexOf(req.params.unit_id), 1);
+            await conn.query(`UPDATE classes SET units_mapping = ${unitClass.units_mapping} WHERE id = ${unitClass.id}`);
+        }
+
+        //delete unit
         await conn.query("DELETE FROM units WHERE id=" + req.params.unit_id);
         res.status(200).json({message: "Unit successfully deleted."})
     }, res, 401, "Unit deletetion failed.")
