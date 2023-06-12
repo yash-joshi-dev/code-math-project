@@ -33,7 +33,7 @@ router.get("", async (req, res, next) => {
     sql = `CALL GetTeacherClasses(${req.userData.id})`
   }
   else if(role === "student") {
-    sql =  `GetStudentClasses(${req.userData.id})`
+    sql =  `CALL GetStudentClasses(${req.userData.id})`
   }
 
   await dbConnection(
@@ -66,34 +66,19 @@ router.get("/:class_id", async (req, res, next) => {
     async (conn) => {
 
       //get class info
-      let sql = `SELECT * FROM classes WHERE id=${req.params.class_id}`;
+      let sql = `SELECT id, name, code FROM classes WHERE id=${req.params.class_id}`;
       let classData = (await conn.query(sql))[0][0];
-
-      //all units ordered by the unit_mapping
-      const unitsMapping = classData.units_mapping.join(", ");
-      sql = `SELECT * FROM units WHERE id IN (${unitsMapping}) ORDER BY FIELD(id, ${unitsMapping})`;
-      let unitsData = (await conn.query(sql))[0];
-
-      //for every unit, retrieve all the problems and lessons within it and order them according to the content-mapping
-      for(const unit of unitsData) {
-
-        //get all lessons and problems for this unit
-        const lessonsData = (await conn.query(`SELECT * FROM lessons WHERE id IN (SELECT lesson_id FROM unit_lessons WHERE unit_id = ${unit.id})`))[0]
-        const problemsData = (await conn.query(`SELECT * FROM problems WHERE id IN (SELECT problem_id FROM unit_problems WHERE unit_id = ${unit.id})`))[0]
-
-        //first store all problem and lesson ids in hash map with their respective objects
-        const hashMap = new Map();
-        lessonsData.forEach((lesson) => {hashMap.set("Lesson:" + lesson.id, lesson)});
-        problemsData.forEach((problem) => {hashMap.set("Problem:" + problem.id, problem)});
-
-        //now for each mapping, we store the respective object in a content array
-        unit.content = [];
-        unit.content_mapping.forEach((mappingId) => {unit.content.push(hashMap.get(mappingId))});
-
+      
+      //get teacher info
+      sql = `SELECT teacher_name FROM class_owners WHERE class_id = ${req.params.class_id} AND rights != "pending"`
+      let teacherNames = (await conn.query(sql))[0];
+      classData.teacherNames = [];
+      for(const teacherName of teacherNames) {
+        classData.teacherName.push(teacherName);
       }
+
       res.status(200).json({
         classData: classData,
-        classUnits: unitsData
       });
     }, 
     res,
@@ -141,7 +126,6 @@ router.post("", async (req, res, next) => {
         teacher_id: req.userData.id,
         teacher_name: req.body.teacherName,
         class_id: id,
-        rights: "editing"
       }
       sql = "INSERT INTO class_owners SET ?"
       await conn.query(sql, classOwnerData);
@@ -156,7 +140,8 @@ router.post("", async (req, res, next) => {
 
 // PUT to modify existing class
 //check if teacher authenticated and in class and editing rights
-//also check if units mapping is still the same
+//also check if units mapping is still has the same units within (only in a different order);
+//cause otherwise, somehow, someone messed it up
 router.put(
   "/:class_id",
   async (req, res, next) => {

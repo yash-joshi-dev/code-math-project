@@ -4,7 +4,7 @@ const userRoutes = require("./routes/user");
 const classesRoutes = require("./routes/classes");
 const classStudentsRoutes = require("./routes/class_students");
 const pendingChecksRoutes = require("./routes/pending_checks");
-const problemSetsRoutes = require("./routes/problem_sets");
+const unitsRoutes = require("./routes/units");
 const problemsRoutes = require("./routes/problems");
 const studentProgressRoutes = require("./routes/student_progress");
 
@@ -30,8 +30,8 @@ app.use((req, res, next) => {
 app.use("/api/user", userRoutes);
 app.use("/api/classes", classesRoutes);
 app.use("/api/class-students", classStudentsRoutes);
-app.use("/api/pending", pendingChecksRoutes);
-app.use("/api/problem-sets", problemSetsRoutes);
+// app.use("/api/pending", pendingChecksRoutes);
+app.use("/api/units", unitsRoutes);
 app.use("/api/problems", problemsRoutes);
 app.use("/api/student-progress", studentProgressRoutes);
 
@@ -70,14 +70,20 @@ module.exports = app;
 //PENDING CODE CHECKS:
 // for /pending-code-checks/ ... do later
 
+//Tags
+
 //PROBLEMS:
-// for /problems/:code, have GET
+// for /problems/:class_id, have GET
 // for /problems/:unit, have GET, POST
+// for /problems, have GET, POST
 // for /problems/:problem-id, have GET, PUT, DELETE
 
 //UNITS:
 // for /units/:code, have GET, POST
 // for /units/:unit_id, have GET, PUT, DELETE
+
+//OWNERSHIP: sharing stuff with other people, unsharing, rights, and so on
+//MOVING: units (adding to class/removing from )
 
 //STUDENT PROGRESS:
 // for /student-progress/:code, have GET (when every student is registered/accepted, create for every released problem) and also everytime a new unit is released
