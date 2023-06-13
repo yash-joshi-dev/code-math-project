@@ -41,7 +41,7 @@ const checkStudent = require('../middleware/check_student');
 // })
 
 //check if authenticated teacher trying to do this
-//GET all problems for a teacher, can also differentiate by class_id, unit_id, and/or tags
+//GET all content for a teacher, can also differentiate by class_id, unit_id, and/or tags, and whether we want lessons or problems
 router.get("/", async (req, res, next) => {
 
     await dbConnection(async (conn) => {
@@ -50,44 +50,45 @@ router.get("/", async (req, res, next) => {
         const conditions = [];
         if(req.query.class_id) conditions.push(`class_units.class_id = ${req.query.class_id}`);
         if(req.query.unit_id)  conditions.push(`class_units.unit_id = ${req.query.unit_id}`);
-        if(req.query.tags) conditions.push(`problems.id IN (SELECT tags.problem_ids FROM tags WHERE tag IN (${req.query.tags.join(", ")}))`);
+        if(req.query.tags) conditions.push(`content.id IN (SELECT tags.content_ids FROM tags WHERE tag IN (${req.query.tags.join(", ")}))`);
+        if(req.query.content_type) conditions.push(`content.type = ${req.query.content_type}`);
 
-        conditions.push(`problem_owners.teacher_id = ${req.userData.id}`);
+        conditions.push(`content_owners.teacher_id = ${req.userData.id}`);
 
         const whereClause = `WHERE ${conditions.join(" AND ")}`;
 
         //get problems
-        const sql = `SELECT problems.id, problems.name, problems.type, problem_owners.is_owner, problem_owners.rights
-                    FROM (((problems INNER JOIN problem_owners ON problems.id = problem_owners.problem_id)
-                    INNER JOIN unit_problems ON problems.id = unit_problems.problem_id)
-                    INNER JOIN class_units ON unit_problems.unit_id = class_units.unit_id) ${whereClause}`;
+        const sql = `SELECT content.id, content.name, content.type, content_owners.is_owner, content_owners.rights
+                    FROM (((content INNER JOIN content_owners ON content.id = content_owners.content_id)
+                    INNER JOIN unit_content ON content.id = unit_content.content_id)
+                    INNER JOIN class_units ON unit_content.unit_id = class_units.unit_id) ${whereClause}`;
 
         problems = (await conn.query(sql))[0];
         res.status(201).json({
-            problems: problems
-        })        
-    }, res, 500, "Getting problems failed.");
+            content: content
+        });
+    }, res, 500, "Getting content failed.");
 
 })
 
-//create a new problem in a teachers library
+//create a new piece of content in a teachers library
 router.post("/", async(req, res, next) => {
 
-    const newProblemData = {
+    const newContentData = {
         name: req.body.name,
         type: req.body.type,
     }
 
     await dbConnection(async (conn) => {
 
-        //first add problem
-        const newProblemId = (await conn.query(`INSERT INTO problems SET ?`, newProblemData))[0].insertId;
+        //first add content
+        const newContentId = (await conn.query(`INSERT INTO content SET ?`, newContentData))[0].insertId;
 
-        //now add new record in problem owners table
-        await conn.query('INSERT INTO problem_owners SET ?', {teacher_id: req.userData.id, problem_id: newProblemId});
-        res.status(201).json({message: "Problem created successfully."});
+        //now add new record in content owners table
+        await conn.query('INSERT INTO content_owners SET ?', {teacher_id: req.userData.id, content_id: newContentId});
+        res.status(201).json({message: "Content created successfully."});
 
-    }, res, 500, "Problem creation failed.")
+    }, res, 500, "Content creation failed.")
 
     //later create stuff in different tables depending on what type is given
 
@@ -101,28 +102,27 @@ router.post("/", async(req, res, next) => {
 // }
 
 //check if authenticated teacher with editing rights trying to do this thats in the class
-//create a new problem in teh class
+//create a new piece of content in the class
 router.post("/:unit_id", async (req, res, next) => {
 
     await dbConnection(async (conn) => {
 
-        //create the new problem
-        const newProblemData = {
+        //create the new content
+        const newContentData = {
             name: req.body.name,
             type: req.body.type,
         }
-        const newProblemId = (await conn.query(`INSERT INTO problems SET ?`, newProblemData))[0].insertId;
+        const newContentId = (await conn.query(`INSERT INTO content SET ?`, newContentData))[0].insertId;
 
         //add the teacher as an owner
-        await conn.query('INSERT INTO problem_owners SET ?', {teacher_id: req.userData.id, problem_id: newProblemId});
-        res.status(201).json({message: "Problem created successfully."});
+        await conn.query('INSERT INTO content_owners SET ?', {teacher_id: req.userData.id, content_id: newContentId});
 
-        //add the problem in the unit problems table
-        await conn.query('INSERT INTO unit_problems SET ?', {unit_id: req.params.unit_id, problem_id: newProblemId});
+        //add the content in the unit content table
+        await conn.query('INSERT INTO unit_content SET ?', {unit_id: req.params.unit_id, content_id: newContentId});
 
-        //add the problem in the unit mapping array
+        //add the content in the unit content mapping array
         const unitData = (await conn.query(`SELECT * FROM units WHERE unit_id = ${req.params.unit_id}`))[0][0];
-        unitData.content_mapping.push("Problem:" + newProblemId);
+        unitData.content_mapping.push(newContentId);
         await conn.query('UPDATE units SET ?', {content_mapping: JSON.stringify(unitData.content_mapping)});
 
         //add a new record in student progress for every student in every class in which the unit is IF it is released
@@ -140,10 +140,10 @@ router.post("/:unit_id", async (req, res, next) => {
                 for(const studentId of studentIds) {
                     const newRecordData = {
                         student_id: studentId,
-                        problem_id: newProblemId, 
+                        content_id: newContentId, 
                         unit_id: req.params.unit_id,
                         class_id: classId,
-                        status: "unattempted",
+                        status: "unread",
                         prev_solutions: JSON.stringify([])
                     }
                     newStudentProgressRecords.push(newRecordData);
@@ -154,58 +154,58 @@ router.post("/:unit_id", async (req, res, next) => {
             await conn.query(`INSERT INTO student_progress SET ?`, newStudentProgressRecords);
         }
 
-        //LATER INSERT MORE DATA INTO SPECIFIC TABLE FOR DIFFERENT TYPES OF PROBLEMS
+        //LATER INSERT MORE DATA INTO SPECIFIC TABLE FOR DIFFERENT TYPES OF CONTENT
 
-        res.status(201).json({message: "Problem creation successful."})
+        res.status(201).json({message: "Content creation successful."})
 
-    }, res, 500, "Problem creation failed.")
+    }, res, 500, "Content creation failed.")
 
 })
 
-//LATER ADD ROUTES TO GET DIFFERENT TYPES OF PROBLEMS
-//AND UPATE DIFFERENT TYPES OF PROBLEMS
+//LATER ADD ROUTES TO GET DIFFERENT TYPES OF Content
+//AND UPATE DIFFERENT TYPES OF CONTENT
 
 //only allow authenticated, editing teachers
-router.put("/:problem_id", async (req, res, next) => {
+router.put("/:content_id", async (req, res, next) => {
     
     await dbConnection(async (conn) => {
 
-        //update the problem
-        await conn.query(`UPDATE problems SET name = ${req.body.name} WHERE problem_id = ${req.params.problem_id}`);
+        //update the content
+        await conn.query(`UPDATE content SET name = ${req.body.name} WHERE content_id = ${req.params.content_id}`);
 
-        //update every student progress record for this problem to unattempted where the unit its in has been released
+        //update every student progress record for this content to unread where the unit its in has been released
         //but since only for released units are records present, that check is unecessary
-        await conn.query(`UPDATE student_progress SET status = "unattempted" WHERE problem_id=${req.params.problem_id}`)
+        await conn.query(`UPDATE student_progress SET status = "unread" WHERE content_id=${req.params.content_id}`)
 
-        //also update stuff according to the problem type ---------------------------------------------TODO
+        //also update stuff according to the content type ---------------------------------------------TODO
 
-        res.status(201).json({message:"Updated stuff successfully"});
+        res.status(201).json({message:"Updated content successfully"});
 
 
-    }, res, 500, "Problem update failed.")
+    }, res, 500, "Content update failed.")
 
 })
 
 
 //only allow editing teachers
-router.delete("/:problem_id", async (req, res, next) => {
+router.delete("/:content_id", async (req, res, next) => {
     await dbConnection(async (conn) => {
 
-        //delete this from the content_mapping under all units that have this problem in them
-        //first get all units which had this as a problem
-        const problemUnits = (await conn.query(`SELECT * FROM units WHERE id IN (SELECT unit_id FROM unit_problems WHERE problem_id = ${req.params.problem_id_id})`))[0];
+        //delete this from the content_mapping under all units that have this content in them
+        //first get all units which had this as content
+        const contentUnits = (await conn.query(`SELECT * FROM units WHERE id IN (SELECT unit_id FROM unit_content WHERE content_id = ${req.params.content_id})`))[0];
 
         //for each class, delete the unit from the units_mapping array
-        for(let unit of problemUnits) { 
+        for(let unit of contentUnits) { 
 
             //can check if index is -1, but shouldn't be EVER because 
-            unit.content_mapping.splice(unit.content_mapping.indexOf("Problem:" + req.params.problem_id), 1);
+            unit.content_mapping.splice(unit.content_mapping.indexOf(req.params.content_id), 1);
             await conn.query(`UPDATE units SET content_mapping = ${unit.content_mapping} WHERE id = ${unit.id}`);
         }
         
-        await conn.query(`DELETE FROM problems WHERE problem_id = ${req.params.problem_id}`);
-        res.status(201).json({message: "Problem deleted successfully."});
-    }, res, 500, "Problem deletion failed.")
+        await conn.query(`DELETE FROM content WHERE content_id = ${req.params.content_id}`);
+        res.status(201).json({message: "Content deleted successfully."});
+    }, res, 500, "Content deletion failed.")
 })
 
 // // GET single problem with an id

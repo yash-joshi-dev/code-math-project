@@ -3,9 +3,8 @@ const bodyParser = require("body-parser");
 const userRoutes = require("./routes/user");
 const classesRoutes = require("./routes/classes");
 const classStudentsRoutes = require("./routes/class_students");
-const pendingChecksRoutes = require("./routes/pending_checks");
 const unitsRoutes = require("./routes/units");
-const problemsRoutes = require("./routes/problems");
+const contentRoutes = require("./routes/content");
 const studentProgressRoutes = require("./routes/student_progress");
 
 const app = express();
@@ -29,10 +28,9 @@ app.use((req, res, next) => {
 //Routes:
 app.use("/api/user", userRoutes);
 app.use("/api/classes", classesRoutes);
-app.use("/api/class-students", classStudentsRoutes);
-// app.use("/api/pending", pendingChecksRoutes);
 app.use("/api/units", unitsRoutes);
-app.use("/api/problems", problemsRoutes);
+app.use("/api/content", contentRoutes);
+app.use("/api/class-students", classStudentsRoutes);
 app.use("/api/student-progress", studentProgressRoutes);
 
 //export app

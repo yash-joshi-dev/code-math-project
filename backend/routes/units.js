@@ -61,47 +61,47 @@ router.get("/:class_id", async (req, res, next) => {
     const role = req.userData.role;
 
     await dbConnection(async (conn) => {
-          //get class info
-          let sql = `SELECT units_mapping FROM classes WHERE id=${req.params.class_id}`;
-          let classData = (await conn.query(sql))[0][0];
-    
-          //all units ordered by the unit_mapping
-          const unitsMapping = classData.units_mapping.join(", ");
-          studentCondition = role === "student" ? "AND is_released = 1" : "";
-          sql = `SELECT * FROM units WHERE id IN (${unitsMapping}) ${studentCondition} ORDER BY FIELD(id, ${unitsMapping})`;
-          let unitsData = (await conn.query(sql))[0];
-    
-          //for every unit, retrieve all the problems and lessons within it and order them according to the content-mapping
-          for(const unit of unitsData) {
+            //get class info
+            let sql = `SELECT units_mapping FROM classes WHERE id=${req.params.class_id}`;
+            let classData = (await conn.query(sql))[0][0];
 
-            //get all lessons and problems for this unit
-            let lessonsData = (await conn.query(`SELECT * FROM lessons WHERE id IN (SELECT lesson_id FROM unit_lessons WHERE unit_id = ${unit.id})`))[0]
-            let problemsData;
+            //all units ordered by the unit_mapping
+            const unitsMapping = classData.units_mapping.join(", ");
 
-            //for problems if user is student, also get statuses for each problem
             if(role === "teacher") {
-                problemsData = (await conn.query(`SELECT problems.id, problems.name, problems.type FROM problems WHERE id IN ((SELECT problem_id FROM unit_problems WHERE unit_id = ${unit.id}))`))[0]
+                sql = `SELECT units.id, units.name, units.is_released, units.content_mapping, unit_owners.is_owner, unit_owners.rights
+                        FROM units INNER JOIN unit_owners ON units.id = unit_owners.unit_id WHERE unit_owners.teacher_id = ${req.userData.id}
+                        AND units.id IN (${unitsMapping}) ORDER BY FIELD(units.id, ${unitsMapping})`;
             }
             else if(role === "student") {
-                sql = `SELECT problems.id, problems.name, problems.type, student_progress.status FROM problems 
-                       INNER JOIN student_progress ON problems.id = student_progress.problem_id
-                       WHERE problems.id IN (SELECT problem_id FROM unit_problems WHERE unit_id = ${unit.id}) AND student_progress.unit_id = ${unit.id} AND student_progress.class_id = ${req.params.class_id}`
-                problemsData = (await conn.query(`CALL GetStudentUnitProblems()`))[0];
+                sql = `SELECT * FROM units WHERE id IN (${unitsMapping}) AND is_released = 1 ORDER BY FIELD(id, ${unitsMapping})`
             }
-    
-            //first store all problem and lesson ids in hash map with their respective objects
-            const hashMap = new Map();
-            lessonsData.forEach((lesson) => {hashMap.set("Lesson:" + lesson.id, lesson)});
-            problemsData.forEach((problem) => {hashMap.set("Problem:" + problem.id, problem)});
-    
-            //now for each mapping, we store the respective object in a content array
-            unit.content = [];
-            unit.content_mapping.forEach((mappingId) => {unit.content.push(hashMap.get(mappingId))});
-    
-          }
-          res.status(200).json({
+            let unitsData = (await conn.query(sql))[0];
+
+            //for every unit, retrieve all the problems and lessons within it and order them according to the content-mapping
+            for(const unit of unitsData) {
+
+                const contentMapping = unit.content_mapping.join(", ");
+
+                //if teacher, content data with rights in is owner, if student, get with status
+                if(role === "teacher") {
+                    sql = `SELECT content.id, content.name, content.type, content_owners.rights, content_owners.is_owner
+                            FROM content INNER JOIN content_owners ON content.id = content_owners.id WHERE content_owners.teacher_id = ${req.userData.id}
+                            AND content.id IN (${contentMapping}) ORDER BY FIELD(content.id, ${contentMapping})`;
+                }
+                else if(role === "student") {
+                    sql = `SELECT content.id, content.name, content.type, student_progress.status FROM content 
+                            INNER JOIN student_progress ON content.id = student_progress.content_id
+                            WHERE content.id IN (${contentMapping}) AND student_progress.unit_id = ${unit.id} AND student_progress.class_id = ${req.params.class_id}
+                            AND student_id = ${req.userData.id} ORDER BY FIELD(content.id, ${contentMapping})`;
+                }
+
+                unit.content = (await conn.query(sql))[0];
+
+            }
+            res.status(200).json({
             units: unitsData
-          });
+            });
     }, res, 401, "Units cannot be accessed.")
 
 })
@@ -160,15 +160,15 @@ router.put("/:unit_id", async (req, res, next) => {
 
     await dbConnection(async (conn) => {
         //check if previously released or not
-        const wasReleased = (await conn.query(`SELECT is_released FROM units WHERE unit_id = ${req.params.unit_id}`))[0][0].is_released;
+        const unitData = (await conn.query(`SELECT * FROM units WHERE unit_id = ${req.params.unit_id}`))[0][0].is_released;
 
-        if(wasReleased && !req.body.isReleased) {
+        if(unitData.is_released && !req.body.isReleased) {
             await conn.query(`DELETE FROM student_progress WHERE unit_id = ${req.params.unit_id}`);
         }
-        else if(!wasReleased && req.body.isReleased) {
-            //now add a student progress for every problem in the unit and for every student in every class that this unit is present
-            //first get all problems in this unit
-            const problemIds = (await conn.query(`SELECT problem_id FROM unit_problems WHERE unit_id = ${req.params.unit_id}`))[0].map((item) => {return item.problem_id});
+        else if(!unitData.is_released && req.body.isReleased) {
+            //now add a student progress for all content in the unit and for every student in every class that this unit is present
+            //first get all content in this unit
+            const contentIds = unitData.content_mapping;
 
             //now get all classes that this unit is in
             const classIds = (await conn.query(`SELECT class_id FROM class_units WHERE unit_id = ${req.params.unit_id}`))[0].map((item) => {return item.class_id});
@@ -180,13 +180,13 @@ router.put("/:unit_id", async (req, res, next) => {
                 const studentIds = (await conn.query(sql)).map(item => {return item.student_id});
 
                 for(const studentId of studentIds) {
-                    for(const problemId of problemIds) {
+                    for(const contentId of contentIds) {
                         const newRecordData = {
                             student_id: studentId,
-                            problem_id: problemId, 
+                            content_id: contentId, 
                             unit_id: req.params.unit_id,
                             class_id: classId,
-                            status: "unattempted",
+                            status: "unread",
                             prev_solutions: JSON.stringify([])
                         }
                         newStudentProgressRecords.push(newRecordData);
