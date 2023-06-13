@@ -6,14 +6,20 @@ const checkTeacher = require('../middleware/check_teacher');
 const checkStudent = require('../middleware/check_student');
 const checkInClass = require('../middleware/check_in_class');
 
-//GET all students for a class
-router.get('/:class_id', checkAuth, checkTeacher, checkInClass, async (req, res, next) => {
+//create anew pending student
+//delete class student
+//approve and remove pending student
 
-    const sql = "CALL Get_Class_Students_SP(" + req.params.class_id + ")";
+
+//GET all students for a class
+//check authenticating viewing teacher in the class
+router.get('/:class_id', async (req, res, next) => {
+
+    const sql = `SELECT id, name FROM users WHERE id IN (SELECT student_id FROM class_students WHERE class_id = ${req.params.class_id} AND approved = 1) ORDER BY name`;
     await dbConnection(async (conn) => {
         let response = await conn.query(sql);
         res.status(201).json({
-            students: response[0][0]
+            students: response[0]
         });
     }, res, 401, "An error occurred while getting students.");
 
@@ -22,11 +28,11 @@ router.get('/:class_id', checkAuth, checkTeacher, checkInClass, async (req, res,
 //GET all pending students
 router.get('/pending/:class_id', checkAuth, checkTeacher, checkInClass, async (req, res, next) => {
 
-    const sql = "CALL Get_Pending_Students_SP(" + req.params.class_id + ")";
+    const sql = `SELECT id, name FROM users WHERE id IN (SELECT student_id FROM class_students WHERE class_id = ${req.params.class_id} AND approved = 0) ORDER BY name`;
     await dbConnection(async (conn) => {
         let response = await conn.query(sql);
         res.status(201).json({
-            pendingStudents: response[0][0]
+            pendingStudents: response[0]
         });
     }, res, 401, "An error occurred while getting pending students.");
 
@@ -64,9 +70,9 @@ router.post("/:code", checkAuth, checkStudent, async (req, res, next) => {
 });
 
 //patch to approve student into a class
-router.patch("", checkAuth, checkTeacher, checkInClass, async (req, res, next) => {
+router.patch("/:student_id", checkAuth, checkTeacher, checkInClass, async (req, res, next) => {
 
-    const sql = "UPDATE class_students SET approved=1 WHERE class_id=" + req.body.classId + " AND student_id=" + req.body.studentId;
+    const sql = "UPDATE class_students SET approved=1 WHERE class_id=" + req.body.classId + " AND student_id=" + req.params.student_id;
     await dbConnection(async (conn) => {
         await conn.query(sql);
         res.status(200).json({message: "Updated student to be in class."})
@@ -77,7 +83,7 @@ router.patch("", checkAuth, checkTeacher, checkInClass, async (req, res, next) =
 //DELETE from class table (to remove student)
 router.delete("/:class_id/:student_id", checkAuth, checkTeacher, checkInClass, async (req, res, next) => {
 
-    const sql = "DELETE FROM class_students WHERE class_id=" + req.params.class_id + " AND student_id=" + req.params.student_id + ";";
+    const sql = "DELETE FROM class_students WHERE class_id=" + req.params.class_id + " AND student_id=" + req.params.student_id;
     
     await dbConnection(async (conn) => {
         await conn.query(sql);
