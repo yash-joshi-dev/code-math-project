@@ -73,3 +73,4 @@ router.delete("/:class_id/:teacher_id", async(req, res, next) => {
 
 })
 
+module.exports = router;

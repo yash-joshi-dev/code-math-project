@@ -71,3 +71,5 @@ router.delete("/:unit_id/:teacher_id", async(req, res, next) => {
     }, res, 500, "Deleting teacher failed.")
 
 })
+
+module.exports = router;
