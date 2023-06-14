@@ -51,7 +51,9 @@ router.get("", async (req, res, next) => {
         }
       })
       
-      return res.status(200).json(classes);
+      return res.status(200).json({
+        classes: classes
+      });
     },
     res, 500, "Error retrieving your classes. Please try again later."
   );

@@ -6,6 +6,10 @@ const classStudentsRoutes = require("./routes/class_students");
 const unitsRoutes = require("./routes/units");
 const contentRoutes = require("./routes/content");
 const studentProgressRoutes = require("./routes/student_progress");
+const classOwnersRoutes = require("./routes/ownership/class_owners");
+const unitOwnersRoutes = require("./routes/ownership/unit_owners");
+const contentOwnersRoutes = require("./routes/ownership/content_owners");
+
 
 const app = express();
 
@@ -32,6 +36,10 @@ app.use("/api/units", unitsRoutes);
 app.use("/api/content", contentRoutes);
 app.use("/api/class-students", classStudentsRoutes);
 app.use("/api/student-progress", studentProgressRoutes);
+app.use("/api/class_owners", classOwnersRoutes);
+app.use("/api/unit_owners", unitOwnersRoutes);
+app.use("/api/content_owners", contentOwnersRoutes);
+
 
 //export app
 module.exports = app;
