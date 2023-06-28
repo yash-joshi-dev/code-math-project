@@ -1,10 +1,10 @@
 const express = require('express');
-const dbConnection = require('../db');
+const dbConnection = require('../../db');
 const router = express.Router();
-const checkAuth = require('../middleware/check_auth');
-const checkTeacher = require('../middleware/check_teacher');
-const checkInClass = require('../middleware/check_in_class');
-const checkStudent = require('../middleware/check_student');
+const checkAuth = require('../../middleware/check_auth');
+const checkTeacher = require('../../middleware/check_teacher');
+const checkInClass = require('../../middleware/check_in_class');
+const checkStudent = require('../../middleware/check_student');
 const { createLesson, updateLesson, getLesson } = require('./lessons');
 const { createBlockProblem, updateBlockProblem, getBlockProblem } = require('./block_problems');
 

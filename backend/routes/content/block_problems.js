@@ -1,5 +1,5 @@
 const express = require("express");
-const dbConnection = require("../db");
+const dbConnection = require("../../db");
 const router = express.Router();
 
 
@@ -33,8 +33,7 @@ module.exports = {
     runHiddenTests,
 }
 
-//in create problems add logic for tag creation
-//in update problems add logic for tag updation
+
 //delete tags (that are no longer used) not including premade tags but do just in problems
 
 //for definitons, get all for a teacher, get all default/suggested ones (with teacher_id = NULL), add new one to teacher def, delete, update
