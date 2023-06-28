@@ -6,6 +6,16 @@ const checkTeacher = require('../middleware/check_teacher');
 const checkInClass = require('../middleware/check_in_class');
 const checkStudent = require('../middleware/check_student');
 
+//STUDENT PROGRESS:
+// for /student-progress/:code, have GET (when every student is registered/accepted, create for every released problem) and also everytime a new unit is released
+// for /student-progress/:code/:unit, have GET
+// for /student-progress/:code/:problem-id, have GET (inside a particular class, we never gonna have duplicate problems)
+// for /student-progress/:code/:student, have GET
+// for /student-progress/:code/:unit/:student, have GET
+// for /student-progress/:code/:problem/:student, have GET, POST, PUT, DELETE
+
+
+
 // Post when student submits problem for first time
 router.post("/:class_id", checkAuth, checkStudent, checkInClass, async (req, res, next) => {
     await dbConnection(async (conn) => {

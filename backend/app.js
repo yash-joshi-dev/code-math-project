@@ -39,7 +39,8 @@ app.use("/api/student-progress", studentProgressRoutes);
 app.use("/api/class_owners", classOwnersRoutes);
 app.use("/api/unit_owners", unitOwnersRoutes);
 app.use("/api/content_owners", contentOwnersRoutes);
-
+app.use("/api/unit_management", unitManagementRoutes);
+app.use("/api/content_management", contentManagementRoutes);
 
 //export app
 module.exports = app;
@@ -66,7 +67,7 @@ module.exports = app;
 // for /glossary/:word, have GET
 
 //LESSON_DEFINITIONS:
-// for /lesson-definitions/:lesson-id, have GET, POST
+// for /lesson-definitions/:lesson-id, have GET, POST <---- don't need GET since pass up when getting a lesson anyway
 // for /lesson-definitions/:lesson-id/:definition-id, have DELETE
 
 //LESSONS:
@@ -91,10 +92,4 @@ module.exports = app;
 //OWNERSHIP: sharing stuff with other people, unsharing, rights, and so on
 //MOVING: units (adding to class/removing from )
 
-//STUDENT PROGRESS:
-// for /student-progress/:code, have GET (when every student is registered/accepted, create for every released problem) and also everytime a new unit is released
-// for /student-progress/:code/:unit, have GET
-// for /student-progress/:code/:problem-id, have GET (inside a particular class, we never gonna have duplicate problems)
-// for /student-progress/:code/:student, have GET
-// for /student-progress/:code/:unit/:student, have GET
-// for /student-progress/:code/:problem/:student, have GET, POST, PUT, DELETE
+
