@@ -5,6 +5,8 @@ const checkAuth = require('../middleware/check_auth');
 const checkTeacher = require('../middleware/check_teacher');
 const checkInClass = require('../middleware/check_in_class');
 const checkStudent = require('../middleware/check_student');
+const { createLesson, updateLesson, getLesson } = require('./lessons');
+const { createBlockProblem, updateBlockProblem, getBlockProblem } = require('./block_problems');
 
 
 // for / GET POST
@@ -58,12 +60,12 @@ router.get("/", async (req, res, next) => {
         const whereClause = `WHERE ${conditions.join(" AND ")}`;
 
         //get problems
-        const sql = `SELECT content.id, content.name, content.type, content_owners.is_owner, content_owners.rights
+        const sql = `SELECT content.id, content.name, content.type, content.tags, content_owners.is_owner, content_owners.rights
                     FROM (((content INNER JOIN content_owners ON content.id = content_owners.content_id)
                     INNER JOIN unit_content ON content.id = unit_content.content_id)
                     INNER JOIN class_units ON unit_content.unit_id = class_units.unit_id) ${whereClause}`;
 
-        problems = (await conn.query(sql))[0];
+        const content = (await conn.query(sql))[0];
         res.status(201).json({
             content: content
         });
@@ -77,6 +79,7 @@ router.post("/", async(req, res, next) => {
     const newContentData = {
         name: req.body.name,
         type: req.body.type,
+        tags: JSON.stringify(req.body.tags)
     }
 
     await dbConnection(async (conn) => {
@@ -84,13 +87,30 @@ router.post("/", async(req, res, next) => {
         //first add content
         const newContentId = (await conn.query(`INSERT INTO content SET ?`, newContentData))[0].insertId;
 
+        //add tags into tags table
+        let tags = req.body.tags.map(item => {
+            return {
+                content_id: newContentId,
+                tag: item
+            }
+        })
+        await conn.query(`INSERT INTO content_tags SET ?`, tags);
+
         //now add new record in content owners table
         await conn.query('INSERT INTO content_owners SET ?', {teacher_id: req.userData.id, content_id: newContentId});
+
+        //create right type of problem
+        switch(req.body.type) {
+            case "lesson": createLesson(conn, req, newContentId);
+                           break;
+            case "block":  createBlockProblem(conn, req, newContentId);
+                           break;
+            default: console.log("Something died in the content table.");
+        }
+
         res.status(201).json({message: "Content created successfully."});
 
     }, res, 500, "Content creation failed.")
-
-    //later create stuff in different tables depending on what type is given
 
 })
 
@@ -111,8 +131,18 @@ router.post("/:unit_id", async (req, res, next) => {
         const newContentData = {
             name: req.body.name,
             type: req.body.type,
+            tags: JSON.stringify(req.body.tags)
         }
         const newContentId = (await conn.query(`INSERT INTO content SET ?`, newContentData))[0].insertId;
+
+        //add tags into tags table
+        let tags = req.body.tags.map(item => {
+            return {
+                content_id: newContentId,
+                tag: item
+            }
+        })
+        await conn.query(`INSERT INTO content_tags SET ?`, tags);
 
         //add the teacher as an owner
         await conn.query('INSERT INTO content_owners SET ?', {teacher_id: req.userData.id, content_id: newContentId});
@@ -154,7 +184,14 @@ router.post("/:unit_id", async (req, res, next) => {
             await conn.query(`INSERT INTO student_progress SET ?`, newStudentProgressRecords);
         }
 
-        //LATER INSERT MORE DATA INTO SPECIFIC TABLE FOR DIFFERENT TYPES OF CONTENT
+        //create right type of problem
+        switch(req.body.type) {
+            case "lesson": createLesson(conn, req, newContentId);
+                            break;
+            case "block":  createBlockProblem(conn, req, newContentId);
+                            break;
+            default: console.log("Something died in the content table.");
+        }
 
         res.status(201).json({message: "Content creation successful."})
 
@@ -163,21 +200,77 @@ router.post("/:unit_id", async (req, res, next) => {
 })
 
 //LATER ADD ROUTES TO GET DIFFERENT TYPES OF Content
-//AND UPATE DIFFERENT TYPES OF CONTENT
+router.get("/:content_id", async (req, res, next) => {
+
+    await dbConnection(async (conn) => {
+
+        //get the name, type and tags
+        const contentData = (await conn.query(`SELECT id, name, type, tags FROM content WHERE id = ${req.params.content_id}`))[0][0];
+
+        //get the rest of the data from the other object
+        let extraContentData;
+
+        switch(contentData.type) {
+            case "lesson": extraContentData = getLesson(conn, req, newContentId);
+                           break;
+            case "block":  extraContentData = getBlockProblem(conn, req, newContentId);
+                           break;
+            default: console.log("Something died in the content table.");
+        }
+
+        //send back everything
+        res.status(200).json({contentData: {...contentData, ...extraContentData}});
+
+    }, res, 500, "An error occurred while getting content data.");
+
+})
+
+router.patch("/:content_id", async (req, res, next) => {
+
+    await dbConnection(async (conn) => {
+        //update the content name
+        await conn.query(`UPDATE content SET name = ${req.body.name} WHERE content_id = ${req.params.content_id}`);
+        res.status(201).json({message: "Successfuly updated name of content."});
+    }, res, 500, "An error occurred while updating name");
+
+})
 
 //only allow authenticated, editing teachers
 router.put("/:content_id", async (req, res, next) => {
     
     await dbConnection(async (conn) => {
 
+        const newContentData = {
+            name: req.body.name,
+            tags: req.body.tags
+        }        
+
         //update the content
-        await conn.query(`UPDATE content SET name = ${req.body.name} WHERE content_id = ${req.params.content_id}`);
+        await conn.query(`UPDATE content SET ? WHERE content_id = ${req.params.content_id}`, newContentData);
+
+        //update tags by deleting all for content, then adding all new ones into tags table
+        await conn.query(`DELETE FROM content_tags WHERE content_id = ${req.params.content_id}`);
+        let tags = req.body.tags.map(item => {
+            return {
+                content_id: newContentId,
+                tag: item
+            }
+        })
+        await conn.query(`INSERT INTO content_tags SET ?`, tags);
 
         //update every student progress record for this content to unread where the unit its in has been released
         //but since only for released units are records present, that check is unecessary
         await conn.query(`UPDATE student_progress SET status = "unread" WHERE content_id=${req.params.content_id}`)
 
         //also update stuff according to the content type ---------------------------------------------TODO
+        //update right type of problem
+        switch(req.body.type) {
+            case "lesson": updateLesson(conn, req, newContentId);
+                           break;
+            case "block":  updateBlockProblem(conn, req, newContentId);
+                           break;
+            default: console.log("Something died in the content table.");
+        }
 
         res.status(201).json({message:"Updated content successfully"});
 
