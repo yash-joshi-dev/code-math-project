@@ -33,12 +33,11 @@ module.exports = {
     runHiddenTests,
 }
 
-
+//add new tags for a teacher
 //delete tags (that are no longer used) not including premade tags but do just in problems
+//get all tags for a teacher + premade tags (with like teacher id = 0)
 
-//for definitons, get all for a teacher, get all default/suggested ones (with teacher_id = NULL), add new one to teacher def, delete, update
 //for glossary get for a student, add defs for a student (through an array); also each glossary is for a particular class (not cross class)
 
-//get all tags for a teacher + premade tags (with like teacher id = null)
 
 //and finally, of course student progress

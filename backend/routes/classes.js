@@ -25,7 +25,7 @@ function generateRandCode() {
 
 //get all classes for a particular teacher or student
 //check auth
-router.get("", async (req, res, next) => {
+router.get("/", async (req, res, next) => {
   const role = req.userData.role;
 
   let sql;
