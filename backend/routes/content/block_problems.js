@@ -37,7 +37,7 @@ module.exports = {
 //delete tags (that are no longer used) not including premade tags but do just in problems
 //get all tags for a teacher + premade tags (with like teacher id = 0)
 
-//for glossary get for a student, add defs for a student (through an array); also each glossary is for a particular class (not cross class)
 
 
 //and finally, of course student progress
+//actually, just add defs when change student progress for a lesson to read
