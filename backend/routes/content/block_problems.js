@@ -33,11 +33,4 @@ module.exports = {
     runHiddenTests,
 }
 
-//add new tags for a teacher
-//delete tags (that are no longer used) not including premade tags but do just in problems
-//get all tags for a teacher + premade tags (with like teacher id = 0)
-
-
-
-//and finally, of course student progress
-//actually, just add defs when change student progress for a lesson to read
+//delete tags (that are no longer used) not including premade tags but do just in problems, do later maybe

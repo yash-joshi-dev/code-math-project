@@ -42,6 +42,21 @@ const { createBlockProblem, updateBlockProblem, getBlockProblem } = require('./b
 
 // })
 
+
+//get all tags for a particular teacher (including premade tags)
+router.get("/tags", async (req, res, next) => {
+    await dbConnection(async (conn) => {
+
+        const teacherTags = (await conn.query(`SELECT * FROM tags WHERE teacher_id = ${req.userData.id}`))[0];
+        const premadeTags = (await conn.query(`SELECT * FROM tags WHERE teacher_id = -1`))[0];
+        res.status(200).json({
+            teacherTags: teacherTags,
+            premadeTags: premadeTags
+        })
+
+    }, res, 500, "Error retrieving tags.")
+})
+
 //check if authenticated teacher trying to do this
 //GET all content for a teacher, can also differentiate by class_id, unit_id, and/or tags, and whether we want lessons or problems
 router.get("/", async (req, res, next) => {
@@ -96,6 +111,19 @@ router.post("/", async(req, res, next) => {
         })
         await conn.query(`INSERT INTO content_tags SET ?`, tags);
 
+        //add any new tags into teacher's thing
+        let currentTags = (await conn.query(`SELECT tag FROM definitions WHERE teacher_id = ${req.userData.id} OR teacher_id = -1`))[0];
+        currentTags = currentTags.map(tagData => tagData.tag);
+        let newTags = [];
+        req.body.tags.forEach(tag => {
+            
+            if(!currentTags.includes(tag)) {
+                newTags.push({teacher_id: req.userData.id, tag: tag});
+            }
+
+        });
+        await conn.query(`INSERT INTO tags SET ?`, newTags);
+
         //now add new record in content owners table
         await conn.query('INSERT INTO content_owners SET ?', {teacher_id: req.userData.id, content_id: newContentId});
 
@@ -143,6 +171,19 @@ router.post("/:unit_id", async (req, res, next) => {
             }
         })
         await conn.query(`INSERT INTO content_tags SET ?`, tags);
+
+        //add any new tags into teacher's thing
+        let currentTags = (await conn.query(`SELECT tag FROM definitions WHERE teacher_id = ${req.userData.id} OR teacher_id = -1`))[0];
+        currentTags = currentTags.map(tagData => tagData.tag);
+        let newTags = [];
+        req.body.tags.forEach(tag => {
+            
+            if(!currentTags.includes(tag)) {
+                newTags.push({teacher_id: req.userData.id, tag: tag});
+            }
+
+        });
+        await conn.query(`INSERT INTO tags SET ?`, newTags);
 
         //add the teacher as an owner
         await conn.query('INSERT INTO content_owners SET ?', {teacher_id: req.userData.id, content_id: newContentId});

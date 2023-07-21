@@ -7,8 +7,12 @@ router.get("/", async (req, res, next) => {
     await dbConnection(async (conn) => {
 
         //get all definitions for the teacher
-        const definitions = (await conn.query(`SELECT * FROM definitions WHERE teacher_id = ${req.userData.id} OR teacher_id = -1`))[0];
-        return res.status(200).json({definitions: definitions});
+        const teacherDefinitions = (await conn.query(`SELECT * FROM definitions WHERE teacher_id = ${req.userData.id}`))[0];
+        const premadeDefinitions = (await conn.query(`SELECT * FROM definitions WHERE teacher_id = -1`))[0];
+        return res.status(200).json({
+            teacherDefinitions: teacherDefinitions,
+            premadeDefinitions: premadeDefinitions
+        });
 
 
     }, res, 500, "Error retrieving definitions.");
