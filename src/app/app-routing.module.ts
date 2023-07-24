@@ -20,16 +20,16 @@ const appRoutes: Routes = [
     {path: "", component: HomeComponent},
     {path: "login", component: LoginComponent},
     {path: "sign-up/:userType", component: SignUpComponent},
-    {path: "classes", component: ClassesComponent, canActivate: [AuthGuard]},
-    {path: "class/:code/:class_id", component: ClassComponent, canActivate: [AuthGuard], children: [
-        {path: "class-list", component: ClassListComponent, canActivate: [TeacherGuard]},
-        {path: "create-block-problem", component: CreateBlockProblemComponent, canActivate: [TeacherGuard], children: [
-            {path: "basic-info", component: BlockProblemInfoComponent},
-            {path: "tests", component: CreateTestsComponent},
-            {path: "solution", component: CreateBlockSolutionComponent}
-        ]},
-        {path: "assignments", component: ProblemSetsComponent}
-    ]},
+    // {path: "classes", component: ClassesComponent, canActivate: [AuthGuard]},
+    // {path: "class/:code/:class_id", component: ClassComponent, canActivate: [AuthGuard], children: [
+    //     {path: "class-list", component: ClassListComponent, canActivate: [TeacherGuard]},
+    //     {path: "create-block-problem", component: CreateBlockProblemComponent, canActivate: [TeacherGuard], children: [
+    //         {path: "basic-info", component: BlockProblemInfoComponent},
+    //         {path: "tests", component: CreateTestsComponent},
+    //         {path: "solution", component: CreateBlockSolutionComponent}
+    //     ]},
+    //     {path: "assignments", component: ProblemSetsComponent}
+    // ]},
     {path: "**", component: PageNotFoundComponent}
 
 ]

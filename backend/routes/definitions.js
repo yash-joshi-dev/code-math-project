@@ -1,5 +1,5 @@
 const express = require("express");
-const dbConnection = require("../../db");
+const dbConnection = require("../db");
 const router = express.Router();
 
 //get all words for a teacher (including ones for a null teacher; aka preset definitions)
@@ -68,4 +68,4 @@ router.delete("/:definition_id", async (req, res, next) => {
 })
 
 //for definitons, get all for a teacher, get all default/suggested ones (with teacher_id = NULL), add new one to teacher def, delete, update
-
+module.exports = router;

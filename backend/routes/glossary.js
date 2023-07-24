@@ -1,5 +1,5 @@
 const express = require("express");
-const dbConnection = require("../../db");
+const dbConnection = require("../db");
 const router = express.Router();
 
 
@@ -21,3 +21,5 @@ router.get("/", async (req, res, next) => {
     }, res, 500, "Error retrieving definitions for glossary.");
 
 })
+
+module.exports = router;

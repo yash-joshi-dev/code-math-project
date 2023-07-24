@@ -1,5 +1,5 @@
 const express = require('express');
-const dbConnection = require('../db');
+const dbConnection = require('../../db');
 const router = express.Router();
 
 //get all teachers with their rights and owner for a particular content

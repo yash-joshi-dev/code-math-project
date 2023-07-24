@@ -69,6 +69,7 @@ router.post("/:code", checkAuth, checkStudent, async (req, res, next) => {
 
 });
 
+//add student progress to this
 //patch to approve student into a class
 router.patch("/:student_id", checkAuth, checkTeacher, checkInClass, async (req, res, next) => {
 

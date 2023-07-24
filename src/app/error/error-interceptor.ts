@@ -13,8 +13,7 @@ export class ErrorInterceptor implements HttpInterceptor {
     intercept(req: HttpRequest<any>, next: HttpHandler) {
         return next.handle(req).pipe(
             catchError((error: HttpErrorResponse) => {
-                console.log("yyyyyyyyyyyyyyyyyyyyys")
-                if(error.error.auth && error.error.auth === false) {
+                if(error.error.auth !== undefined && error.error.auth === false) {
                     console.log('doing it')
                     this.router.navigate(["/login"]);
                 }
