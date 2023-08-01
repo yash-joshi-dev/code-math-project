@@ -1,3 +1,5 @@
+import { NgDompurifySanitizer } from "@tinkoff/ng-dompurify";
+import { TuiRootModule, TuiDialogModule, TuiAlertModule, TUI_SANITIZER } from "@taiga-ui/core";
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { AppRoutingModule } from './app-routing.module';
@@ -12,23 +14,24 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http'
 import { AuthInterceptor } from './authorization/auth-interceptor';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
-import { ClassComponent } from './classes/class/class.component';
-import { ClassListComponent } from './classes/class/class-list/class-list.component';
+// import { ClassComponent } from './classes/class/class.component';
+// import { ClassListComponent } from './classes/class/class-list/class-list.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { ErrorInterceptor } from './error/error-interceptor';
 import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
-import {MatDialogModule} from '@angular/material/dialog';
+import {MAT_DIALOG_DEFAULT_OPTIONS, MatDialogModule} from '@angular/material/dialog';
 import {MatButtonModule} from '@angular/material/button';
 import { ErrorComponent } from './error/error.component';
-import { ClassesComponent, JoinClassFormComponent, JoinConfirmationComponent, NewClassFormComponent } from './classes/classes.component';
+// import { ClassesComponent, JoinClassFormComponent, JoinConfirmationComponent, NewClassFormComponent } from './classes/classes.component';
 import {MatCardModule} from '@angular/material/card';
 import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatInputModule} from '@angular/material/input';
 import {MatMenuModule} from '@angular/material/menu';
 import {MatIconModule} from '@angular/material/icon';
+import { MatListModule } from '@angular/material/list';
 import { AssignmentsComponent } from './classes/class/assignments/assignments.component';
-import { ClassHeaderComponent } from './classes/class/class-header/class-header.component';
+// import { ClassHeaderComponent } from './classes/class/class-header/class-header.component';
 import { NewProblemSetFormComponent, ProblemSetsComponent } from './problem-sets/problem-sets.component';
 import {MatCheckboxModule} from '@angular/material/checkbox';
 import {MatExpansionModule} from '@angular/material/expansion';
@@ -42,6 +45,11 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import {MatSelectModule} from '@angular/material/select';
 import { InputTypeDirectiveDirective } from './problems/create-block-problem/input-type-directive.directive';
 import { RichTextEditorAllModule } from '@syncfusion/ej2-angular-richtexteditor';
+import { ClassesComponent } from './class-components/classes/classes.component';
+import { ClassComponent } from './class-components/class/class.component';
+import { ConfirmationModalComponent } from './general/confirmation-modal/confirmation-modal.component';
+import { EditClassModalComponent } from './class-components/classes/edit-class-modal/edit-class-modal.component';
+import { ShareClassModalComponent } from './class-components/classes/share-class-modal/share-class-modal.component';
 
 
 @NgModule({
@@ -52,15 +60,8 @@ import { RichTextEditorAllModule } from '@syncfusion/ej2-angular-richtexteditor'
     LoginComponent,
     SignUpComponent,
     PageNotFoundComponent,
-    ClassComponent,
-    ClassListComponent,
     ErrorComponent,
-    ClassesComponent,
-    NewClassFormComponent,
-    JoinClassFormComponent,
-    JoinConfirmationComponent,
     AssignmentsComponent,
-    ClassHeaderComponent,
     ProblemSetsComponent,
     NewProblemSetFormComponent,
     EditMenuComponent,
@@ -69,7 +70,12 @@ import { RichTextEditorAllModule } from '@syncfusion/ej2-angular-richtexteditor'
     CreateTestsComponent,
     CreateBlockSolutionComponent,
     BlockProblemInfoComponent,
-    InputTypeDirectiveDirective
+    InputTypeDirectiveDirective,
+    ClassesComponent,
+    ClassComponent,
+    ConfirmationModalComponent,
+    EditClassModalComponent,
+    ShareClassModalComponent,
   ],
   imports: [
     BrowserModule,
@@ -92,12 +98,18 @@ import { RichTextEditorAllModule } from '@syncfusion/ej2-angular-richtexteditor'
     MatExpansionModule,
     MatToolbarModule,
     MatSelectModule,
-    RichTextEditorAllModule
-  ],
+    RichTextEditorAllModule,
+    MatListModule,
+      TuiRootModule,
+      TuiDialogModule,
+      TuiAlertModule
+],
   providers: [
     {provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true},
-    {provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true}
-  ],
+    {provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true},
+    {provide: MAT_DIALOG_DEFAULT_OPTIONS, useValue: {maxWidth: 500, hasBackdrop: true}},
+      {provide: TUI_SANITIZER, useClass: NgDompurifySanitizer}
+],
   bootstrap: [AppComponent],
   entryComponents: [ErrorComponent]
 })

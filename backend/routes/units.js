@@ -11,7 +11,7 @@ const checkStudent = require('../middleware/check_student');
 // for /units/:class_id, have GET, POST
 // for /units/:unit_id, have GET, PUT, DELETE
 
-//check if person is authenticated teacher
+//check if person is authenticated teacher - but why?
 router.get("/", async (req, res, next) => {
 
     //get all units for a teacher in alpha order

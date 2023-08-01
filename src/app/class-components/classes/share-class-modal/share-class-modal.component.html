@@ -1,0 +1,27 @@
+<h1 mat-dialog-title>Share Class</h1>
+<mat-dialog-content>
+    <form [formGroup]="shareClassForm" (ngSubmit)="onSubmit()">
+        <mat-form-field appearance="fill">
+            <mat-label>Email:</mat-label>
+            <input matInput formControlName="emailAddress">
+            <mat-error *ngIf="!shareClassForm.get('emailAddress').valid && shareClassForm.get('emailAddress').touched">Please enter a valid email.</mat-error>
+        </mat-form-field>
+        <mat-form-field>
+        <mat-label>Access:</mat-label>
+        <mat-select formControlName="rights">
+            <mat-option value="editing">Editing</mat-option>
+            <mat-option value="viewing">Viewing</mat-option>
+        </mat-select>
+        </mat-form-field>
+        <button mat-raised-button [disabled]="!shareClassForm.valid" type="submit" color="primary">Share!</button>
+    </form>
+    <mat-list role="list">
+        <mat-list-item role="listitem" *ngFor="let teacher of teachers">
+            {{teacher.name}} {{teacher.emailAddress}} ({{teacher.rights}})
+        </mat-list-item>
+    </mat-list>
+
+</mat-dialog-content>
+<mat-dialog-actions>
+    <button mat-button type="button" [mat-dialog-close]="">Cancel</button>
+</mat-dialog-actions>

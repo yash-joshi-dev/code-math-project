@@ -1,0 +1,25 @@
+<h1 mat-dialog-title>Edit Class</h1>
+<form [formGroup]="editClassForm" (ngSubmit)="onSubmit()">
+    <mat-dialog-content>
+            <mat-form-field appearance="fill">
+                <mat-label>Name:</mat-label>
+                <input matInput formControlName="name">
+                <mat-error *ngIf="!editClassForm.get('name').valid && editClassForm.get('name').touched">Please enter a name.</mat-error>
+            </mat-form-field>
+            <mat-form-field appearance="fill">
+                <mat-label>Joining Code:</mat-label>
+                <input matInput formControlName="code">
+                <mat-error *ngIf="!editClassForm.get('code').valid && editClassForm.get('code').touched">Please enter a join code 6-10 characters.</mat-error>
+            </mat-form-field>
+            <p>Change Unit Ordering: </p>
+            <div cdkDropList class="example-list" (cdkDropListDropped)="drop($event)">
+                <div class="example-box" *ngFor="let unit of units" cdkDrag>
+                    {{ unit.name }}
+                </div>
+            </div>
+    </mat-dialog-content>
+    <mat-dialog-actions>
+        <button mat-raised-button [disabled]="!editClassForm.valid" type="submit" color="primary">Save!</button>
+        <button mat-button type="button" [mat-dialog-close]="">Cancel</button>
+    </mat-dialog-actions>
+</form>

@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { AuthService } from 'src/app/authorization/auth.service';
-import { UserData } from 'src/app/authorization/user-data.model';
+import { User } from 'src/app/authorization/user.model';
 import { Class } from '../../class.model';
 import { ClassesService } from '../../classes.service';
 import { ClassStudentsService } from '../../class-students.service';

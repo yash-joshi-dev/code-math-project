@@ -6,7 +6,7 @@ const router = express.Router();
 //only allow authenticated teachers in the class
 router.get("/:class_id", async (req, res, next) => {
 
-    const sql = `SELECT users.name, class_owners.teacher_id, class_owners.rights, class_owners.is_owner
+    const sql = `SELECT users.name, users.email_address, class_owners.teacher_id, class_owners.rights, class_owners.is_owner
                 FROM users INNER JOIN class_owners ON users.id = class_owners.teacher_id
                 WHERE class_owners.class_id = ${req.params.class_id}`;
 
@@ -25,7 +25,7 @@ router.get("/:class_id", async (req, res, next) => {
 router.post("/:class_id", async (req, res, next) => {
 
     //get teacher data using the email
-    let sql = `SELECT id, name FROM users WHERE role = "teacher" AND email = "${req.body.email}"`
+    let sql = `SELECT id, name FROM users WHERE role = "teacher" AND email = "${req.body.teacherEmail}"`
 
     await dbConnection(async (conn) => {
         

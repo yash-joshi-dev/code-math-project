@@ -1,7 +1,9 @@
-.form-control {
-    margin-bottom: .5rem;
+mat-form-field {
+    display: inline;
+    margin: 20px 5px;
 }
 
-input.ng-invalid.ng-touched {
-    border: 1px solid red;
+mat-card {
+    margin: 50px auto;
+    padding: 20px;
 }

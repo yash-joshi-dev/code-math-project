@@ -8,6 +8,7 @@ import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 export class EditMenuComponent implements OnInit {
 
   @Output() editClick = new EventEmitter<boolean>();
+  @Output() shareClick = new EventEmitter<boolean>();
   @Output() deleteClick = new EventEmitter<boolean>();
 
 
@@ -18,6 +19,10 @@ export class EditMenuComponent implements OnInit {
 
   onEditClicked() {
     this.editClick.emit(true);
+  }
+
+  onShareClicked() {
+    this.shareClick.emit(true);
   }
 
   onDeleteClicked() {

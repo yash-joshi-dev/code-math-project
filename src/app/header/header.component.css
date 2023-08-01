@@ -1,6 +1,14 @@
 .active {
     border-bottom: 2px solid white;
 }
-.btn {
+.mat-raised-button {
     margin: 5px;
+}
+
+.nav {
+    padding: 10px;
+}
+
+.nav-item {
+    padding: 0px 5px;
 }

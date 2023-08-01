@@ -1,33 +1,24 @@
-<div class="container-fluid">
-    <div class="row">
-        <mat-spinner *ngIf="isLoading"></mat-spinner>
-        <div class="col-sm-5 mx-auto" *ngIf="!isLoading">
-            <div style="text-align: center">
-                <h1>Login</h1>
-            </div>
-            <form [formGroup]="loginForm" (ngSubmit)="onLogin()">
-                <div class="form-group">
-                    <label for="email_address">Email:</label>
-                    <input 
-                        type="text"
-                        id="email_address"
-                        class="form-control"
-                        formControlName="email_address"
-                    >
-                    <p *ngIf="!loginForm.get('email_address').valid && loginForm.get('email_address').touched">Invalid email.</p>
-                </div>
-                <div class="form-group">
-                    <label for="password">Password:</label>
-                    <input
-                        type="password"
-                        id="password"
-                        class="form-control"
-                        formControlName="password"
-                    >
-                    <p *ngIf="!loginForm.get('password').valid && loginForm.get('password').touched">Please enter a password.</p>
-                </div>
-                <button class="btn btn-primary" type="submit" [disabled]="!loginForm.valid">Login</button>
-            </form>
-        </div>
-    </div>
+<div class="row">
+    <mat-spinner *ngIf="isLoading"></mat-spinner>
+    <mat-card class="col-6 col-md-4 col-lg-3" *ngIf="!isLoading">
+        <mat-card-title>Login</mat-card-title>
+        <form [formGroup]="loginForm" (ngSubmit)="onLogin()">
+
+            <mat-form-field appearance="fill">
+                <mat-label>Email or Username:</mat-label>
+                <input matInput formControlName="emailAddress">
+                <mat-error *ngIf="!loginForm.get('emailAddress').valid && loginForm.get('emailAddress').touched">Please enter a valid email.</mat-error>
+            </mat-form-field>
+            
+            <mat-form-field appearance="fill">
+                <mat-label>Password</mat-label>
+                <input matInput type="password" formControlName="password">
+                <mat-error *ngIf="!loginForm.get('password').valid && loginForm.get('password').touched">Please enter a password.</mat-error>
+            </mat-form-field>
+            <mat-card-actions>
+            <button style="float: right;" mat-raised-button color="accent" type="submit" [disabled]="!loginForm.valid">Login</button>
+
+            </mat-card-actions>
+        </form>
+    </mat-card>
 </div>

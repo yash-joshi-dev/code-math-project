@@ -1,0 +1,6 @@
+<h1 mat-dialog-title>{{data.title}}</h1>
+<mat-dialog-content>{{data.body}}</mat-dialog-content>
+<mat-dialog-actions>
+    <button mat-raised-button color="primary" [mat-dialog-close]="false">Cancel</button>
+    <button mat-raised-button color="warn" [mat-dialog-close]="true">Continue</button>
+</mat-dialog-actions>

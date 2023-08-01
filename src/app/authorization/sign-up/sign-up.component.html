@@ -1,61 +1,43 @@
-<div class="container-fluid">
-    <div class="row">
-        <mat-spinner *ngIf="isLoading"></mat-spinner>
-        <div class="col-sm-5 mx-auto" *ngIf="!isLoading">
-            <div style="text-align: center">
-                <h1>{{title}}</h1>
-            </div>
-            <form [formGroup]="signUpForm" (ngSubmit)="onSubmit()">
-                <div class="form-group">
-                    <label for="first_name">First Name:</label>
-                    <input 
-                        type="text"
-                        id="first_name"
-                        class="form-control"
-                        formControlName="first_name"
-                    >
-                    <p *ngIf="!signUpForm.get('first_name').valid && signUpForm.get('first_name').touched">
-                        <span *ngIf="signUpForm.get('first_name').errors['nameLengthIsTooLong']">Name length must be less than 50 characters.</span>
-                        <span *ngIf="signUpForm.get('first_name').errors['required']">This field is required.</span>
-                    </p>
-                </div>
-                <div class="form-group">
-                    <label for="last_name">Last Name:</label>
-                    <input 
-                        type="text"
-                        id="last_name"
-                        class="form-control"
-                        formControlName="last_name"
-                    >
-                    <p *ngIf="!signUpForm.get('last_name').valid && signUpForm.get('last_name').touched">
-                        <span *ngIf="signUpForm.get('last_name').errors['nameLengthIsTooLong']">Name length must be less than 50 characters.</span>
-                        <span *ngIf="signUpForm.get('last_name').errors['required']">This field is required.</span>
-                    </p>                </div>
-                <div class="form-group">
-                    <label for="email_address">Email:</label>
-                    <input 
-                        type="text"
-                        id="email_address"
-                        class="form-control"
-                        formControlName="email_address"
-                    >
-                    <p *ngIf="!signUpForm.get('email_address').valid && signUpForm.get('email_address').touched">Please enter a valid email.</p>
-                </div>
-                <div class="form-group">
-                    <label for="password">Password:</label>
-                    <input
-                        type="password"
-                        id="password"
-                        class="form-control"
-                        formControlName="password"
-                    >
-                    <p *ngIf="!signUpForm.get('password').valid && signUpForm.get('password').touched">Please enter a password.</p>
-                </div>
-                <button class="btn btn-primary" type="submit" [disabled]="!signUpForm.valid">Sign-Up</button>
-            </form>
-            <hr>
-            <button class="btn btn-success" type="button" [routerLink]="['/sign-up', otherType]">Sign up as a {{otherType}} instead!</button>
+<div class="row">
+    <mat-spinner *ngIf="isLoading"></mat-spinner>
+    <mat-card class="col-sm-3 mx-auto" *ngIf="!isLoading">
+        <mat-card-title>{{title}}</mat-card-title>
+        <form [formGroup]="signUpForm" (ngSubmit)="onSubmit()">
 
-        </div>
-    </div>
+            <mat-form-field appearance="fill">
+                <mat-label>First Name:</mat-label>
+                <input matInput formControlName="firstName">
+                <mat-error *ngIf="!signUpForm.get('firstName').valid && signUpForm.get('firstName').touched">
+                        <span *ngIf="signUpForm.get('firstName').errors['nameLengthIsTooLong']">Name length must be less than 50 characters.</span>
+                        <span *ngIf="signUpForm.get('firstName').errors['required']">This field is required.</span>
+                </mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="fill">
+                <mat-label>Last Name:</mat-label>
+                <input matInput formControlName="lastName">
+                <mat-error *ngIf="!signUpForm.get('lastName').valid && signUpForm.get('lastName').touched">
+                        <span *ngIf="signUpForm.get('lastName').errors['nameLengthIsTooLong']">Name length must be less than 50 characters.</span>
+                        <span *ngIf="signUpForm.get('lastName').errors['required']">This field is required.</span>
+                </mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="fill">
+                <mat-label>Email:</mat-label>
+                <input matInput formControlName="emailAddress">
+                <mat-error *ngIf="!signUpForm.get('emailAddress').valid && signUpForm.get('emailAddress').touched">Please enter a valid email.</mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="fill">
+                <mat-label>Password:</mat-label>
+                <input matInput formControlName="password">
+                <mat-error *ngIf="!signUpForm.get('password').valid && signUpForm.get('password').touched">Please enter a password.</mat-error>
+            </mat-form-field>
+        
+            <button mat-raised-button color="primary" type="submit" [disabled]="!signUpForm.valid">Sign-Up</button>
+        </form>
+        <hr>
+        <button mat-raised-button color="accent" type="button" [routerLink]="['/sign-up', otherType]">Sign up as a {{otherType}} instead!</button>
+
+    </mat-card>
 </div>

@@ -1,12 +1,14 @@
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-home',
   templateUrl: './home.component.html',
-  styleUrls: ['./home.component.css']
+  styleUrls: ['./home.component.css'],
 })
 export class HomeComponent implements OnInit {
+  @ViewChild('popUpTemplate') modalTemplate: TemplateRef<any>;
 
   movies = [
     'Episode I - The Phantom Menace',
@@ -24,9 +26,11 @@ export class HomeComponent implements OnInit {
     moveItemInArray(this.movies, event.previousIndex, event.currentIndex);
   }
 
-  constructor() { }
+  constructor(public dialog: MatDialog) {}
 
-  ngOnInit(): void {
+  ngOnInit(): void {}
+
+  onClicked() {
+    let dialogRef = this.dialog.open(this.modalTemplate);
   }
-
 }

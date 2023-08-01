@@ -146,7 +146,7 @@ export class NewClassFormComponent implements OnInit, OnDestroy{
       );
     }
     else if(this.data.action === "Edit") {
-      this.editClassSubscription = this.classesService.editClass(this.classForm.value.class_name, this.classForm.value.teacher_name, this.data.classId).subscribe(
+      this.editClassSubscription = this.classesService.editClass(this.classForm.value.class_name, this.classForm.value.teacher_name, this.data.classId, "000000").subscribe(
         result => {
           this.dialogRef.close(
             {

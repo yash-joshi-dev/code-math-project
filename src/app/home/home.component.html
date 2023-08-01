@@ -1,15 +1,29 @@
-<div class="jumbotron jumbotron-fluid m-0 p-0" style="background-color:rgb(20, 91, 91); background-size: cover;">
+<div
+  class="jumbotron jumbotron-fluid m-0 p-0"
+  style="background-color: rgb(20, 91, 91); background-size: cover"
+>
   <div class="container text-center text-white">
     <h1 class="display-3">Code-Math</h1>
-    <p class="lead">The best place to learn how to code and solve math, at the same time!!!</p>
+    <p class="lead">
+      The best place to learn how to code and solve math, at the same time!!!
+    </p>
+  </div>
+</div>
+<button mat-button (click)="onClicked()">Something</button>
+<h1>HELO</h1>
+<div class="example-box" cdkDrag>Drag me around</div>
+
+<div cdkDropList class="example-list" (cdkDropListDropped)="drop($event)">
+  <div class="example-box" *ngFor="let movie of movies" cdkDrag>
+    {{ movie }}
   </div>
 </div>
 
-<div class="example-box" cdkDrag>
-    Drag me around
-  </div>
-
-  <div cdkDropList class="example-list" (cdkDropListDropped)="drop($event)">
-    <div class="example-box" *ngFor="let movie of movies" cdkDrag>{{movie}}</div>
-  </div>
-  
+<ng-template #popUpTemplate>
+  <h1 mat-dialog-title>Edit something?</h1>
+  <mat-dialog-content>This will delete everything you know.</mat-dialog-content>
+  <mat-dialog-actions>
+    <button mat-button mat-dialog-close="Help">Let's Do it!</button>
+    <button mat-button mat-dialog-close="Help">Cancel</button>
+  </mat-dialog-actions>
+</ng-template>

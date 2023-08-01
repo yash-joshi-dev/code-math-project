@@ -2,194 +2,205 @@ import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { Router } from "@angular/router";
 import { Subject } from "rxjs";
-import { UserData } from "./user-data.model";
+import { User } from "./user.model";
+import { environment } from "src/environments/environment";
 
-@Injectable({providedIn: "root"})
+@Injectable({ providedIn: 'root' })
 export class AuthService {
+  private token: string;
+  private authStatusListener = new Subject<boolean>();
+  private isAuthenticated = false;
+  private tokenTimer: any;
+  public userData: User;
+  private isTeacher = false;
 
-    private token: string;
-    private authStatusListener = new Subject<boolean>();
-    private isAuthenticated = false;
-    private tokenTimer: any;
-    public userData: UserData;
-    private isTeacher = false;
+  constructor(private http: HttpClient, private router: Router) {}
 
-    constructor(private http: HttpClient, private router: Router) {};
+  //------------------------------------------------------------------GETTERS FOR REST OF APP
 
-    //saves data in local storage
-    private saveAuthData(token: string, expirationDate: Date) {
-        localStorage.setItem('token', token);
-        localStorage.setItem('expiration', expirationDate.toISOString());
-        localStorage.setItem('userData', JSON.stringify(this.userData));
+  getToken() {
+    return this.token;
+  }
+
+  getIsAuthenticated() {
+    return this.isAuthenticated;
+  }
+
+  getIsTeacher() {
+    return this.isTeacher;
+  }
+
+  getIsStudent() {
+    return !this.isTeacher;
+  }
+
+  getUserData() {
+    return this.userData;
+  }
+
+  getAuthStatusListener() {
+    //prevents other components from emitting values with this
+    return this.authStatusListener.asObservable();
+  }
+
+  //--------------------------------------------------------------------------------------LOCAL STORAGE RELATED
+
+  //saves data in local storage
+  private saveAuthData(token: string, expirationDate: Date) {
+    localStorage.setItem('token', token);
+    localStorage.setItem('expiration', expirationDate.toISOString());
+    localStorage.setItem('userData', JSON.stringify(this.userData));
+  }
+
+  //gets auth data from local storage
+  private getAuthData() {
+    //get the data
+    const token = localStorage.getItem('token');
+    const expirationDate = localStorage.getItem('expiration');
+    const userData = JSON.parse(localStorage.getItem('userData'));
+
+    //check if both exist; if not, return nothing
+    if (!token || !expirationDate) {
+      return;
     }
 
-    //gets auth data from local storage
-    private getAuthData() {
+    //if both exist, return both in an object
+    return {
+      token: token,
+      expirationDate: new Date(expirationDate),
+      userData: userData,
+    };
+  }
 
-        //get the data
-        const token = localStorage.getItem('token');
-        const expirationDate = localStorage.getItem('expiration');
-        const userData = JSON.parse(localStorage.getItem('userData'));
+  //clears data from local storage
+  private clearAuthData() {
+    localStorage.removeItem('token');
+    localStorage.removeItem('expiration');
+    localStorage.removeItem('userData');
+  }
 
-        //check if both exist; if not, return nothing
-        if(!token || !expirationDate) {
-            return;
-        }
+  //--------------------------------------------------------------------------------------------SET EVERYTHING FOR LOGIN
 
-        //if both exist, return both in an object
-        return {
-            token: token,
-            expirationDate: new Date(expirationDate),
-            userData: userData
-        };
+  //sets token stuff, navigates away, and starts logout timer
+  private setToken(response: {
+    token: string;
+    expiresIn: number;
+    userData: any;
+  }) {
+    this.token = response.token;
 
+    if (this.token) {
+      //get the user data
+      this.userData = new User(
+        response.userData.id,
+        response.userData.name,
+        response.userData.email_address,
+        response.userData.role
+      );
+
+      //set timeout to expire the timer
+      const expireTime = response.expiresIn;
+      this.tokenTimer = setTimeout(this.logout, expireTime * 1000);
+
+      //set all stuff to true
+      this.authStatusListener.next(true);
+      this.isAuthenticated = true;
+      this.isTeacher = this.userData.role === 'teacher';
+
+      //save stuff in local storage
+      const currDate = new Date();
+      const expirationDate = new Date(currDate.getTime() + expireTime * 1000);
+      this.saveAuthData(this.token, expirationDate);
+
+      //navigate to dashboard
+      this.router.navigate(['/classes']);
+    }
+  }
+
+  //-----------------------------------------------------------------------------------SIGN IN / LOGIN RELATED
+
+  createNewUser(newUserData, userType) {
+    newUserData.role = userType;
+
+    this.http
+      .post<{ token: string; expiresIn: number; newUserData: any }>(
+        environment.BACKEND_URL + '/user/signup',
+        newUserData
+      )
+      .subscribe({
+        next: (response) => {
+          this.loginUser(newUserData);
+        },
+        error: (error) => {
+          this.authStatusListener.next(false);
+        },
+      });
+  }
+
+  loginUser(existingUserData) {
+    const userData = existingUserData;
+    this.http
+      .post<{ token: string; expiresIn: number; userData: any }>(
+        environment.BACKEND_URL + '/user/login',
+        userData
+      )
+      .subscribe({
+        next: (response) => {
+          this.setToken(response);
+        },
+        error: (error) => {
+          this.authStatusListener.next(false);
+        },
+      });
+  }
+
+  autoAuthUser() {
+    //get the data
+    const userInfo = this.getAuthData();
+
+    //if we get nothing, just return
+    if (!userInfo) {
+      return;
     }
 
-    //clears data from local storage
-    private clearAuthData() {
-        localStorage.removeItem('token');
-        localStorage.removeItem('expiration');
-        localStorage.removeItem('userData');
+    //get time diff between now and expiration date
+    const currDate = new Date();
+    const expireTime = userInfo.expirationDate.getTime() - currDate.getTime();
+
+    if (expireTime > 0) {
+      //set stuff to true
+      this.token = userInfo.token;
+      this.userData = userInfo.userData;
+      this.authStatusListener.next(true);
+      this.isAuthenticated = true;
+      this.isTeacher = this.userData.role === 'teacher';
+
+      //set timer
+      this.tokenTimer = setTimeout(this.logout, expireTime);
+
+      //navigate to dashboard (NOTTTTTT)
+      // this.router.navigate(['/classes']);
+    } else {
+      // set everything to false:
+      this.logout();
     }
+  }
 
-    //sets token stuff, navigates away, and starts logout timer
-    private setToken(response: {token: string, expiresIn: number, userData: any}) {
-        this.token = response.token;
+  logout() {
+    //tell everyone token expired
+    this.token = null;
+    this.userData = null;
+    this.isAuthenticated = false;
+    this.isTeacher = false;
+    this.authStatusListener.next(false);
 
-        if(this.token) {
-            
-            //get the user data
-            this.userData = new UserData(
-                response.userData.id,
-                response.userData.name,
-                response.userData.email_address,
-                response.userData.bio,
-                response.userData.role,
-                response.userData.user_name
-            )
+    //clear local storage
+    this.clearAuthData();
 
-            //set timeout to expire the timer
-            const expireTime = response.expiresIn;
-            this.tokenTimer = setTimeout(this.logout, expireTime * 1000);
+    //navigate away
+    this.router.navigate(['/login']);
 
-            //set all stuff to true
-            this.authStatusListener.next(true);
-            this.isAuthenticated = true;
-            this.isTeacher = this.userData.role === 'teacher';
-
-            //save stuff in local storage
-            const currDate = new Date();
-            const expirationDate = new Date(currDate.getTime() + expireTime * 1000);
-            this.saveAuthData(this.token, expirationDate);
-
-            //navigate to dashboard
-            this.router.navigate(['/classes']);
-
-        }
-
-    }
-
-    getToken() {
-        return this.token;
-    }
-
-    getIsAuthenticated() {
-        return this.isAuthenticated;
-    }
-
-    getIsTeacher() {
-        return this.isTeacher;
-    }
-
-    getAuthStatusListener() {
-        //prevents other components from emitting values with this
-        return this.authStatusListener.asObservable(); 
-    }
-
-    createNewUser(newUserData, userType) {
-
-        newUserData.role = userType;
-
-        this.http.post<{token: string, expiresIn: number, newUserData: any}>("http://localhost:3000/api/user/signup", newUserData).subscribe(
-        {
-            next: (response) => {
-                this.loginUser(newUserData);
-            },
-            error: (error) => {
-                this.authStatusListener.next(false);
-            }
-        });
-
-    }
-
-    loginUser(existingUserData) {
-
-        const userData = existingUserData;
-        this.http.post<{token: string, expiresIn: number, userData: any}>("http://localhost:3000/api/user/login", userData).subscribe(
-        {
-            next: (response) => {
-                this.setToken(response);
-            },
-            error: (error) => {
-                this.authStatusListener.next(false);
-            }
-        });
-    }
-
-    autoAuthUser() {
-
-        //get the data
-        const userInfo = this.getAuthData();
-
-        //if we get nothing, just return
-        if(!userInfo) {
-            return;
-        }
-
-        //get time diff between now and expiration date
-        const currDate = new Date();
-        const expireTime = userInfo.expirationDate.getTime() - currDate.getTime();
-
-        if(expireTime > 0) {
-
-            //set stuff to true
-            this.token = userInfo.token;
-            this.userData = userInfo.userData;
-            this.authStatusListener.next(true);
-            this.isAuthenticated = true;
-            this.isTeacher = this.userData.role === 'teacher';
-
-            //set timer
-            this.tokenTimer = setTimeout(this.logout, expireTime);
-
-            //navigate to dashboard (NOTTTTTT)
-            // this.router.navigate(['/classes']);
-
-        }
-        else {
-
-            // set everything to false:
-            this.logout();
-        }
-    }
-
-    logout() {
-
-        //tell everyone token expired
-        this.token = null;
-        this.userData = null;
-        this.isAuthenticated = false;
-        this.isTeacher = false;
-        this.authStatusListener.next(false);
-
-        //clear local storage
-        this.clearAuthData();
-
-        //navigate away
-        this.router.navigate(['/login']);
-
-        //clear timeout
-        clearTimeout(this.tokenTimer);
-
-    }
+    //clear timeout
+    clearTimeout(this.tokenTimer);
+  }
 }
