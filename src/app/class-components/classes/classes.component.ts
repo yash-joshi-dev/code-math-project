@@ -8,6 +8,7 @@ import { ConfirmationModalComponent } from 'src/app/general/confirmation-modal/c
 import { CryptoService } from 'src/app/general/crypto.service';
 import { EditClassModalComponent } from './edit-class-modal/edit-class-modal.component';
 import { ShareClassModalComponent } from './share-class-modal/share-class-modal.component';
+import { ClassStudentsService } from '../class-students.service';
 
 @Component({
   selector: 'app-classes',
@@ -22,7 +23,7 @@ export class ClassesComponent implements OnInit, OnDestroy {
   classes: Class[];
   isTeacher: boolean;  
 
-  constructor(private dialog: MatDialog, private classService: ClassService, private authService: AuthService, private cryptoService: CryptoService) { }
+  constructor(private dialog: MatDialog, private classStudentsService: ClassStudentsService, private classService: ClassService, private authService: AuthService, private cryptoService: CryptoService) { }
 
   ngOnInit(): void {
 
@@ -58,6 +59,7 @@ export class ClassesComponent implements OnInit, OnDestroy {
       next: (classCode) => {
         if(classCode.length > 0) {
           //call route for making a person join a class
+            this.classStudentsService.addPendingStudent(classCode).subscribe((response) => {});
         }
       }
     })

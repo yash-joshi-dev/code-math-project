@@ -1,12 +1,12 @@
-<h1 mat-dialog-title>Share Class</h1>
+<h1 mat-dialog-title>Share Class:</h1>
 <mat-dialog-content>
     <form [formGroup]="shareClassForm" (ngSubmit)="onSubmit()">
-        <mat-form-field appearance="fill">
+        <mat-form-field appearance="fill" style="width: 250px">
             <mat-label>Email:</mat-label>
             <input matInput formControlName="emailAddress">
             <mat-error *ngIf="!shareClassForm.get('emailAddress').valid && shareClassForm.get('emailAddress').touched">Please enter a valid email.</mat-error>
         </mat-form-field>
-        <mat-form-field>
+        <mat-form-field appearance="fill" style="width: 90px">
         <mat-label>Access:</mat-label>
         <mat-select formControlName="rights">
             <mat-option value="editing">Editing</mat-option>
@@ -15,13 +15,89 @@
         </mat-form-field>
         <button mat-raised-button [disabled]="!shareClassForm.valid" type="submit" color="primary">Share!</button>
     </form>
-    <mat-list role="list">
-        <mat-list-item role="listitem" *ngFor="let teacher of teachers">
-            {{teacher.name}} {{teacher.emailAddress}} ({{teacher.rights}})
-        </mat-list-item>
-    </mat-list>
+    <h1 mat-dialog-title>Current Teachers:</h1>
+    <ng-container *ngTemplateOutlet="teachersTable"></ng-container>
+
 
 </mat-dialog-content>
 <mat-dialog-actions>
     <button mat-button type="button" [mat-dialog-close]="">Cancel</button>
 </mat-dialog-actions>
+
+<!-- template for the massive table -->
+<ng-template #teachersTable>
+<table
+    tuiTable
+    [columns]="columns"
+    style="width: 550px;"
+>
+    <thead>
+        <tr tuiThGroup>
+            <th
+                tuiTh
+            >
+                Name
+            </th>
+            <th
+                tuiTh
+            >
+                E-mail
+            </th>
+            <th
+                tuiTh
+            >
+                Access
+            </th>
+        </tr>
+    </thead>
+    <tbody
+        tuiTbody
+    >
+        <tr
+            *ngFor="let teacher of teachers; let index = index"
+            tuiTr
+        >
+            <td
+                *tuiCell="'name'"
+                tuiTd
+            >
+                {{ teacher.name }}
+            </td>
+            <td
+                *tuiCell="'email'"
+                tuiTd
+            >
+                <a
+                    tuiLink
+                    [href]="'mailto:' + teacher.emailAddress"
+                >
+                    {{ teacher.emailAddress }}
+                </a>
+            </td>
+            <td
+                *tuiCell="'access'"
+                tuiTd
+            >
+
+                {{teacher.rights}}
+            </td>
+            <td
+                *tuiCell="'actions'"
+                tuiTd
+            >
+
+                <button
+                    tuiIconButton
+                    size="s"
+                    icon="tuiIconTrash"
+                    title="Remove"
+                    shape="rounded"
+                    type="button"
+                    class="remove"
+                    (click)="removeTeacher(teacher)"
+                ></button>
+            </td>
+        </tr>
+    </tbody>
+</table>
+</ng-template>

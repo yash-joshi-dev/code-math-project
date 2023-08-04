@@ -22,7 +22,7 @@
         <div class="col-sm-12 col-md-8">
             <h1>My Classes</h1>
         </div>
-        <div class="col-sm-12 col-md-4">
+        <div class="col-sm-12 col-md-4 button-container">
             <button mat-raised-button color="primary" *ngIf="!isTeacher" (click)="onJoinClass()">Join Class</button>
             <button mat-raised-button color="accent" *ngIf="isTeacher" (click)="onCreateClass()">Create Class</button>
         </div>

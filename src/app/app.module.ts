@@ -1,5 +1,9 @@
 import { NgDompurifySanitizer } from "@tinkoff/ng-dompurify";
 import { TuiRootModule, TuiDialogModule, TuiAlertModule, TUI_SANITIZER } from "@taiga-ui/core";
+import { TuiTableModule } from '@taiga-ui/addon-table';
+import { TuiSvgModule } from '@taiga-ui/core';
+
+
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { AppRoutingModule } from './app-routing.module';
@@ -100,17 +104,22 @@ import { ShareClassModalComponent } from './class-components/classes/share-class
     MatSelectModule,
     RichTextEditorAllModule,
     MatListModule,
-      TuiRootModule,
-      TuiDialogModule,
-      TuiAlertModule
-],
+    TuiRootModule,
+    TuiDialogModule,
+    TuiAlertModule,
+    TuiTableModule,
+    TuiSvgModule,
+  ],
   providers: [
-    {provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true},
-    {provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true},
-    {provide: MAT_DIALOG_DEFAULT_OPTIONS, useValue: {maxWidth: 500, hasBackdrop: true}},
-      {provide: TUI_SANITIZER, useClass: NgDompurifySanitizer}
-],
+    { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
+    { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true },
+    {
+      provide: MAT_DIALOG_DEFAULT_OPTIONS,
+      useValue: { maxWidth: 600, hasBackdrop: true },
+    },
+    { provide: TUI_SANITIZER, useClass: NgDompurifySanitizer },
+  ],
   bootstrap: [AppComponent],
-  entryComponents: [ErrorComponent]
+  entryComponents: [ErrorComponent],
 })
-export class AppModule { }
+export class AppModule {}

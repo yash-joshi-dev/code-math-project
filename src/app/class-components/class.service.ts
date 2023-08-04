@@ -80,10 +80,10 @@ export class ClassService {
       );
   }
 
-  shareClass(classId: number, teacherEmail: string) {
+  shareClass(classId: number, teacherEmail: string, rights: string) {
     return this.http.post(
       environment.BACKEND_URL + '/class_owners/' + classId,
-      { teacherEmail: teacherEmail }
+      { teacherEmail: teacherEmail, rights: rights }
     );
   }
 

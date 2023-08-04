@@ -9,3 +9,8 @@
     height: 150px;
 }
 
+.button-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: right;
+}
