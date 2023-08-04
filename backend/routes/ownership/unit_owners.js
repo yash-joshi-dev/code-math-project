@@ -1,5 +1,6 @@
 const express = require('express');
 const dbConnection = require('../../db');
+const { shareUnit } = require('./sharing_functions');
 const router = express.Router();
 
 //get all teachers with their rights and owner for a particular unit
@@ -24,24 +25,15 @@ router.get("/:unit_id", async (req, res, next) => {
 //only allow if teacher is owner?
 router.post("/:unit_id", async (req, res, next) => {
 
-    //get teacher data using the email
-    let sql = `SELECT id FROM users WHERE role = "teacher" AND email = "${req.body.email}"`
-
     await dbConnection(async (conn) => {
-        
-        const response = (await conn.query(sql));
-        if(response[0].length === 0) return res.status(400).json({message: "No teacher with the specified email exists."});
 
-        const teacherId = response[0][0].id;
-
-        const newUnitTeacherData = {
-            teacher_id: teacherId,
-            unit_id: req.params.unit_id,
-            rights: req.body.rights,
-            is_owner: 0
+        //check if teacher exists
+        const teacherData = (await conn.query(`SELECT id FROM users WHERE role = "teacher" AND email = "${req.body.teacherEmail}"`))[0];
+        if(teacherData.length === 0) {
+            return res.status(400).json({message: "No teacher with the specified email exists."});
         }
 
-        await conn.query(`INSERT INTO unit_owners SET ?`, newUnitTeacherData);
+        await shareUnit(req.params.unit_id, teacherData[0].id, req.body.teacherEmail, req.body.rights, conn, res);
 
     }, res, 500, "Teacher sharing failed due to server error.")
 
@@ -50,10 +42,13 @@ router.post("/:unit_id", async (req, res, next) => {
 
 //change rights for another teacher
 //only allow if teacher is owner? and authenticated
+//confusion on whether or not to update also content rights when this is updated - PLEASE ASK TEACHER ABOUT THIS
 router.patch("/:unit_id/:teacher_id", async (req, res, next) => {
 
     await dbConnection(async (conn) => {
         await conn.query(`UPDATE unit_owners SET rights = "${req.body.rights}" WHERE unit_id = ${req.params.unit_id} AND teacher_id = ${req.params.teacher_id}`);
+
+
         res.status(200).json({message: "Successfully update teacher rights."})
     }, res, 500, "Updating teacher rights failed.")
 

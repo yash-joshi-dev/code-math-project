@@ -1,5 +1,6 @@
 const express = require('express');
 const dbConnection = require('../../db');
+const { shareContent } = require('./sharing_functions');
 const router = express.Router();
 
 //get all teachers with their rights and owner for a particular content
@@ -23,28 +24,16 @@ router.get("/:content_id", async (req, res, next) => {
 //share content with another teacher
 //only allow if teacher is owner?
 router.post("/:content_id", async (req, res, next) => {
-
-    //get teacher data using the email
-    let sql = `SELECT id FROM users WHERE role = "teacher" AND email = "${req.body.email}"`
-
     await dbConnection(async (conn) => {
-        
-        const response = (await conn.query(sql));
-        if(response[0].length === 0) return res.status(400).json({message: "No teacher with the specified email exists."});
 
-        const teacherId = response[0][0].id;
-
-        const newContentTeacherData = {
-            teacher_id: teacherId,
-            content_id: req.params.content_id,
-            rights: req.body.rights,
-            is_owner: 0
+        //check if teacher exists
+        const teacherData = (await conn.query(`SELECT id FROM users WHERE role = "teacher" AND email = "${req.body.teacherEmail}"`))[0];
+        if(teacherData.length === 0) {
+            return res.status(400).json({message: "No teacher with the specified email exists."});
         }
 
-        await conn.query(`INSERT INTO content_owners SET ?`, newContentTeacherData);
-
+        await shareContent(req.params.content_id, teacherData[0].id, req.body.teacherEmail, req.body.rights, conn, res);
     }, res, 500, "Teacher sharing failed due to server error.")
-
 })
 
 

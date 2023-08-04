@@ -71,11 +71,32 @@ router.post("/:code", checkAuth, checkStudent, async (req, res, next) => {
 
 //add student progress to this
 //patch to approve student into a class
-router.patch("/:student_id", checkAuth, checkTeacher, checkInClass, async (req, res, next) => {
+router.patch("/", checkAuth, checkTeacher, checkInClass, async (req, res, next) => {
 
-    const sql = "UPDATE class_students SET approved=1 WHERE class_id=" + req.body.classId + " AND student_id=" + req.params.student_id;
+    const sql = "UPDATE class_students SET approved=1 WHERE class_id=" + req.body.classId + " AND student_id=" + req.body.studentId;
     await dbConnection(async (conn) => {
         await conn.query(sql);
+
+        //add student progress for this student; get all released units in class, and get all content for each unit, and then add for each content
+        const classUnits = (await conn.query(`SELECT units.id, units.content_mapping FROM units INNER JOIN class_units ON units.id = class_units.unit_id WHERE class_units.class_id = ${req.body.classId} AND units.is_released = 1`))[0];
+        const newStudentProgressRecords = [];
+
+        for(const unit of classUnits) {
+
+            for(const contentId of unit.content_mapping) {
+                const newRecordData = {
+                    student_id: req.body.studentId,
+                    content_id: contentId, 
+                    unit_id: unit.id,
+                    class_id: req.body.classId,
+                    status: "unread",
+                    prev_solutions: JSON.stringify([])
+                }
+                newStudentProgressRecords.push(newRecordData);
+            }
+        }
+        await conn.query(`INSERT INTO student_progress SET ?`, newStudentProgressRecords);
+
         res.status(200).json({message: "Updated student to be in class."})
     }, res, 401, "Couldn't add student to class.");
 
