@@ -30,7 +30,7 @@
 
             <mat-form-field appearance="fill">
                 <mat-label>Password:</mat-label>
-                <input matInput formControlName="password">
+                <input type="password" matInput formControlName="password">
                 <mat-error *ngIf="!signUpForm.get('password').valid && signUpForm.get('password').touched">Please enter a password.</mat-error>
             </mat-form-field>
         

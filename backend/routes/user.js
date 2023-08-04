@@ -23,7 +23,7 @@ router.post("/signup", async (req, res, next) => {
     email_address: req.body.emailAddress,
     password: hash,
     role: req.body.role,
-    user_name: req.body.emailAddresss.split("@")[0],
+    user_name: req.body.emailAddress.split("@")[0],
   };
 
   //insert user into db

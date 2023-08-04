@@ -74,7 +74,7 @@ router.get("/unit/:class_id/:unit_id", async (req, res, next) => {
 
 })
 
-router.get("/problem/:class_id/:content_id", async (req, res, next) => {
+router.get("/content/:class_id/:content_id", async (req, res, next) => {
 
     await dbConnection(async (conn) => {
 
