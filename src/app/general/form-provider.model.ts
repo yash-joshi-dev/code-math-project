@@ -1,5 +1,5 @@
-import { FormGroup } from "@angular/forms";
+import { UntypedFormGroup } from "@angular/forms";
 
 export abstract class FormProvider {
-    abstract getForm(): FormGroup;
+    abstract getForm(): UntypedFormGroup;
 }

@@ -1,5 +1,5 @@
 import { Component, Inject, OnInit } from '@angular/core';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { Content } from 'src/app/content-components/content.model';
 import { Unit } from '../unit.model';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
@@ -13,7 +13,7 @@ import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 })
 export class EditUnitModalComponent implements OnInit {
 
-  editUnitForm: FormGroup;
+  editUnitForm: UntypedFormGroup;
   content: Content[];
   unitData: Unit;
 
@@ -28,12 +28,12 @@ export class EditUnitModalComponent implements OnInit {
     console.log(this.unitData);
     this.content = this.unitData.content;
 
-    this.editUnitForm = new FormGroup({
-      "name": new FormControl(this.unitData.name, [
+    this.editUnitForm = new UntypedFormGroup({
+      "name": new UntypedFormControl(this.unitData.name, [
         Validators.required,
         Validators.maxLength(255),
       ]),
-      "isReleased": new FormControl(this.unitData.isReleased)
+      "isReleased": new UntypedFormControl(this.unitData.isReleased)
     });
   }
 

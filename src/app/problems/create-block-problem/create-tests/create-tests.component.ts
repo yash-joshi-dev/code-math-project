@@ -1,6 +1,6 @@
 import { ThisReceiver } from '@angular/compiler';
 import { Component, OnInit } from '@angular/core';
-import { Form, FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
+import { Form, UntypedFormArray, UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormProvider } from 'src/app/general/form-provider.model';
 
@@ -11,13 +11,13 @@ import { FormProvider } from 'src/app/general/form-provider.model';
 })
 export class CreateTestsComponent implements OnInit {
 
-  testsForm: FormGroup;
-  basicInfoForm: FormGroup;
-  sampleTests: FormArray;
-  hiddenTests: FormArray;
-  inputNames: FormArray;
-  outputNames: FormArray;
-  ranges: FormArray;
+  testsForm: UntypedFormGroup;
+  basicInfoForm: UntypedFormGroup;
+  sampleTests: UntypedFormArray;
+  hiddenTests: UntypedFormArray;
+  inputNames: UntypedFormArray;
+  outputNames: UntypedFormArray;
+  ranges: UntypedFormArray;
   doGenerateCases: boolean = false;
 
   samplesDeleteable: boolean;
@@ -28,20 +28,20 @@ export class CreateTestsComponent implements OnInit {
   constructor(private formProvider: FormProvider, private router: Router, private route: ActivatedRoute) { }
 
   ngOnInit(): void {
-    this.basicInfoForm = <FormGroup> this.formProvider.getForm().get('basic_info');
+    this.basicInfoForm = <UntypedFormGroup> this.formProvider.getForm().get('basic_info');
     const prevFormFinished = this.basicInfoForm.valid;
 
     if(!prevFormFinished) {
       this.router.navigate(['../basic-info'], {relativeTo: this.route});
     }
 
-    this.inputNames = (<FormArray> this.basicInfoForm.get('input_data'));
-    this.outputNames = (<FormArray> this.basicInfoForm.get('output_data'));
+    this.inputNames = (<UntypedFormArray> this.basicInfoForm.get('input_data'));
+    this.outputNames = (<UntypedFormArray> this.basicInfoForm.get('output_data'));
 
     //get all forms and arrays
-    this.testsForm = <FormGroup> this.formProvider.getForm().get('tests');
-    this.sampleTests = <FormArray> this.testsForm.get('sample_tests');
-    this.hiddenTests = <FormArray> this.testsForm.get('hidden_tests');
+    this.testsForm = <UntypedFormGroup> this.formProvider.getForm().get('tests');
+    this.sampleTests = <UntypedFormArray> this.testsForm.get('sample_tests');
+    this.hiddenTests = <UntypedFormArray> this.testsForm.get('hidden_tests');
     // this.ranges = <FormArray> this.testsForm.get('ranges');
 
     //set all values to 0 if inputs and outputs changed, and give them one (write another function to determine if inputs and oututs changed)
@@ -89,10 +89,10 @@ export class CreateTestsComponent implements OnInit {
 
     this.samplesDeleteable = false;
 
-    const array = new FormArray([]);
+    const array = new UntypedFormArray([]);
 
     for(var i = 0; i < this.inputNames.length + this.outputNames.length; i++) {
-      array.push(new FormControl(null, Validators.required));
+      array.push(new UntypedFormControl(null, Validators.required));
     }
 
     this.sampleTests.push(array);
@@ -116,10 +116,10 @@ export class CreateTestsComponent implements OnInit {
 
     this.hiddenTestsDeleteable = false;
   
-    const array = new FormArray([]);
+    const array = new UntypedFormArray([]);
 
     for(var i = 0; i < this.inputNames.length + this.outputNames.length; i++) {
-      array.push(new FormControl(null, Validators.required));
+      array.push(new UntypedFormControl(null, Validators.required));
     }
 
     this.hiddenTests.push(array);
@@ -135,12 +135,12 @@ export class CreateTestsComponent implements OnInit {
   }
 
   getSampleTestRow(i: number) {
-    return (<FormArray> this.sampleTests.at(i)).controls;
+    return (<UntypedFormArray> this.sampleTests.at(i)).controls;
   }
   
 
   getHiddenTestRow(i: number) {
-    return (<FormArray> this.hiddenTests.at(i)).controls;
+    return (<UntypedFormArray> this.hiddenTests.at(i)).controls;
   }
 
 

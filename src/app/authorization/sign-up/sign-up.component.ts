@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Params } from '@angular/router';
 import { AuthService } from '../auth.service';
 import { Subscription } from 'rxjs';
@@ -15,7 +15,7 @@ export class SignUpComponent implements OnInit, OnDestroy {
   title: string;
   userType: string;
   otherType: string;
-  signUpForm: FormGroup;
+  signUpForm: UntypedFormGroup;
   isLoading: boolean = false;
   private authSub: Subscription;
 
@@ -44,11 +44,11 @@ export class SignUpComponent implements OnInit, OnDestroy {
     )
     
     //signup form
-    this.signUpForm = new FormGroup({
-      'firstName': new FormControl(null, [Validators.required, Validators.maxLength(50)]),
-      'lastName': new FormControl(null, [Validators.required, Validators.maxLength(50)]),
-      'emailAddress': new FormControl(null, [Validators.required, Validators.email]),
-      'password': new FormControl(null, [Validators.required])
+    this.signUpForm = new UntypedFormGroup({
+      'firstName': new UntypedFormControl(null, [Validators.required, Validators.maxLength(50)]),
+      'lastName': new UntypedFormControl(null, [Validators.required, Validators.maxLength(50)]),
+      'emailAddress': new UntypedFormControl(null, [Validators.required, Validators.email]),
+      'password': new UntypedFormControl(null, [Validators.required])
     });
   }
 

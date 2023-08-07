@@ -1,5 +1,5 @@
 import { Inject, Component, OnDestroy, OnInit } from '@angular/core';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
@@ -126,7 +126,7 @@ export class ProblemSetsComponent implements OnInit {
 })
 export class NewProblemSetFormComponent implements OnInit, OnDestroy{
 
-  problemSetForm: FormGroup;
+  problemSetForm: UntypedFormGroup;
   problemSetSubscription: Subscription;
 
   constructor(
@@ -146,9 +146,9 @@ export class NewProblemSetFormComponent implements OnInit, OnDestroy{
   ngOnInit(): void {
 
     //create a form
-    this.problemSetForm = new FormGroup({
-      'set_name': new FormControl(this.data.setName, [Validators.required]),
-      'released': new FormControl(this.data.released, [Validators.required])
+    this.problemSetForm = new UntypedFormGroup({
+      'set_name': new UntypedFormControl(this.data.setName, [Validators.required]),
+      'released': new UntypedFormControl(this.data.released, [Validators.required])
     });
 
   }

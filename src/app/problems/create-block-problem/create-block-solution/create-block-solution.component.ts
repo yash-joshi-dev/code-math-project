@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { FormGroup } from '@angular/forms';
+import { UntypedFormGroup } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import * as Blockly from 'blockly';
 import { BlocklyOptions } from 'blockly';
@@ -17,7 +17,7 @@ export class CreateBlockSolutionComponent implements OnInit, OnDestroy {
 
   solution: JSON;
   allowNext: boolean = false;
-  toolboxForm: FormGroup;
+  toolboxForm: UntypedFormGroup;
   workspace;
   toolboxSettingChangeSubscription: Subscription;
   code: string;
@@ -36,7 +36,7 @@ export class CreateBlockSolutionComponent implements OnInit, OnDestroy {
     }
 
     //create toolbox form
-    this.toolboxForm = <FormGroup> this.formProvider.getForm().get('toolbox');
+    this.toolboxForm = <UntypedFormGroup> this.formProvider.getForm().get('toolbox');
 
     this.createWorkspace();
 

@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormArray, UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { FormProvider } from 'src/app/general/form-provider.model';
 
 @Component({
@@ -10,7 +10,7 @@ import { FormProvider } from 'src/app/general/form-provider.model';
 })
 export class CreateBlockProblemComponent extends FormProvider implements OnInit {
 
-  createClassForm: FormGroup;
+  createClassForm: UntypedFormGroup;
 
   constructor() {
     super();
@@ -26,27 +26,27 @@ export class CreateBlockProblemComponent extends FormProvider implements OnInit 
   // })
   ngOnInit(): void {
 
-    this.createClassForm = new FormGroup({
-      'basic_info': new FormGroup({
-        'name': new FormControl(null, [Validators.required]),
-        'variable_data': new FormArray([]),                     //name, type, and range (int a form group)
-        'input_data': new FormArray([]),                       //name, type, and range (in a form group)
-        'output_data': new FormArray([]),
-        'description': new FormControl(null, [Validators.required])
+    this.createClassForm = new UntypedFormGroup({
+      'basic_info': new UntypedFormGroup({
+        'name': new UntypedFormControl(null, [Validators.required]),
+        'variable_data': new UntypedFormArray([]),                     //name, type, and range (int a form group)
+        'input_data': new UntypedFormArray([]),                       //name, type, and range (in a form group)
+        'output_data': new UntypedFormArray([]),
+        'description': new UntypedFormControl(null, [Validators.required])
       }),
 
-      'tests': new FormGroup({
-        'sample_tests': new FormArray([], this.testGivenValidator),
-        'hidden_tests': new FormArray([], this.testGivenValidator),
-        'random_tests_count': new FormControl(0, [Validators.required, this.verifyRandomTestCountRange]),
-        'ranges': new FormArray([])
+      'tests': new UntypedFormGroup({
+        'sample_tests': new UntypedFormArray([], this.testGivenValidator),
+        'hidden_tests': new UntypedFormArray([], this.testGivenValidator),
+        'random_tests_count': new UntypedFormControl(0, [Validators.required, this.verifyRandomTestCountRange]),
+        'ranges': new UntypedFormArray([])
       }),
 
-      'toolbox': new FormGroup({
-        'allowMath': new FormControl(false),
-        'allowBoolean': new FormControl(false),
-        'allowIfs': new FormControl(false),
-        'allowLoops': new FormControl(false)
+      'toolbox': new UntypedFormGroup({
+        'allowMath': new UntypedFormControl(false),
+        'allowBoolean': new UntypedFormControl(false),
+        'allowIfs': new UntypedFormControl(false),
+        'allowLoops': new UntypedFormControl(false)
       })
     });
 
@@ -59,7 +59,7 @@ export class CreateBlockProblemComponent extends FormProvider implements OnInit 
   }
 
   //custom validator to validate test length
-  testGivenValidator(array: FormArray): {[s: string]: boolean} {
+  testGivenValidator(array: UntypedFormArray): {[s: string]: boolean} {
     if(array.length === 0) {
       return {'noTestProvided': true};
     }
@@ -67,7 +67,7 @@ export class CreateBlockProblemComponent extends FormProvider implements OnInit 
   }
 
     //custom validator to validate test length
-    verifyRandomTestCountRange(control: FormControl): {[s: string]: boolean} {
+    verifyRandomTestCountRange(control: UntypedFormControl): {[s: string]: boolean} {
       if(control.value < 0 || control.value > 200) {
         return {'outOfRangeError': true};
       }

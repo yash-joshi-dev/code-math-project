@@ -3,7 +3,7 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { EditClassModalComponent } from '../edit-class-modal/edit-class-modal.component';
 import { ClassService } from '../../class.service';
 import { Teacher } from '../../teacher.model';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { Class } from '../../class.model';
 import { AuthService } from 'src/app/authorization/auth.service';
 
@@ -15,7 +15,7 @@ import { AuthService } from 'src/app/authorization/auth.service';
 export class ShareClassModalComponent implements OnInit {
 
   teachers: Teacher[];
-  shareClassForm: FormGroup;
+  shareClassForm: UntypedFormGroup;
   readonly columns: string[] = ['name', 'email', 'access', 'actions'];
 
   constructor(
@@ -31,9 +31,9 @@ export class ShareClassModalComponent implements OnInit {
     this.setTeachers();
 
     //have form to add a another teacher
-    this.shareClassForm = new FormGroup({
-      "emailAddress": new FormControl("", [Validators.required, Validators.email]),
-      "rights": new FormControl("editing", [Validators.required])
+    this.shareClassForm = new UntypedFormGroup({
+      "emailAddress": new UntypedFormControl("", [Validators.required, Validators.email]),
+      "rights": new UntypedFormControl("editing", [Validators.required])
     })
   }
 

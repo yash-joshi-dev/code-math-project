@@ -1,7 +1,7 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { Lesson } from '../lesson.model';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { ContentService } from '../content.service';
 import { Content } from '../content.model';
 
@@ -14,7 +14,7 @@ export class CreateLessonModalComponent implements OnInit {
 
   // editingMode: boolean;
 
-  createLessonForm: FormGroup;
+  createLessonForm: UntypedFormGroup;
 
   constructor(
     public dialogRef: MatDialogRef<CreateLessonModalComponent>,
@@ -25,9 +25,9 @@ export class CreateLessonModalComponent implements OnInit {
   ngOnInit(): void {
 
     // this.editingMode = (this.data.lessonData !== undefined);
-    this.createLessonForm = new FormGroup({
-      "name" : new FormControl("", [Validators.required, Validators.maxLength(150)]),
-      "content": new FormControl("", [Validators.required, Validators.maxLength(65500)])
+    this.createLessonForm = new UntypedFormGroup({
+      "name" : new UntypedFormControl("", [Validators.required, Validators.maxLength(150)]),
+      "content": new UntypedFormControl("", [Validators.required, Validators.maxLength(65500)])
     })
 
   }

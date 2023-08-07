@@ -1,5 +1,5 @@
 import { Component, Inject, OnInit } from '@angular/core';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { UnitService } from '../unit.service';
 import { Unit } from '../unit.model';
@@ -11,7 +11,7 @@ import { Unit } from '../unit.model';
 })
 export class CreateUnitModalComponent implements OnInit {
 
-  createUnitForm: FormGroup;
+  createUnitForm: UntypedFormGroup;
 
   constructor(
     public dialogRef: MatDialogRef<CreateUnitModalComponent>,
@@ -21,9 +21,9 @@ export class CreateUnitModalComponent implements OnInit {
 
   ngOnInit(): void {
 
-    this.createUnitForm = new FormGroup({
-      "name": new FormControl("", Validators.required),
-      "isReleased": new FormControl(true)
+    this.createUnitForm = new UntypedFormGroup({
+      "name": new UntypedFormControl("", Validators.required),
+      "isReleased": new UntypedFormControl(true)
     })
   }
 
