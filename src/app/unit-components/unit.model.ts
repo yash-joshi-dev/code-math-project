@@ -27,6 +27,7 @@ export class Unit {
 
     //must convert from snake case to camel case
     if(unitData.content) {
+      this.content = [];
         unitData.content.forEach((contentData) => {
             this.content.push(new Content(contentData));
         })

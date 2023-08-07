@@ -1,0 +1,25 @@
+
+<div class="container">
+    <div class="image-container">
+        <img src="../../../assets/math-equations.jpg" alt="Math math-equations">
+        <div class="overlay-text">
+            <h1>{{classData.name}}</h1>
+            <p>{{classData.teacherNames.join(", ")}}</p>
+            <p *ngIf="isTeacher">{{classData.code}}</p>
+        </div>
+        
+    </div>
+    <div class="row" *ngIf="isTeacher && classData.rights === 'editing'">
+        <div class="col-sm-12 d-flex flex-column align-items-center">
+            <button style="margin: 30px auto;" mat-raised-button color="accent" (click)="onCreateUnit()">Create Unit</button>
+            <h5 *ngIf="classData.units.length === 0">Add a unit to begin...</h5>
+        </div>
+    </div>
+    <div class="row" *ngIf="classData.units.length > 0">
+        <div class="col-sm-12 d-flex flex-column align-items-center">
+            <app-unit *ngFor="let unitData of classData.units; let i = index" [unitData]="unitData" (unitDeleted)="onUnitDeleted(i)"></app-unit>
+        </div>
+    </div>
+
+</div>
+

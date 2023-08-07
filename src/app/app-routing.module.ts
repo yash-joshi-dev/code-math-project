@@ -6,19 +6,27 @@ import { PageNotFoundComponent } from "./page-not-found/page-not-found.component
 import { SignUpComponent } from "./authorization/sign-up/sign-up.component";
 import { AuthGuard } from "./authorization/auth.guard";
 import { TeacherGuard } from "./authorization/teacher.guard";
-import { ProblemSetsComponent } from "./problem-sets/problem-sets.component";
+import { ProblemSetsComponent } from "./zproblem-sets/problem-sets.component";
 import { CreateBlockProblemComponent } from "./problems/create-block-problem/create-block-problem.component";
 import { BlockProblemInfoComponent } from "./problems/create-block-problem/block-problem-info/block-problem-info.component";
 import { CreateTestsComponent } from "./problems/create-block-problem/create-tests/create-tests.component";
 import { CreateWorkspaceComponent } from "./problems/create-block-problem/create-workspace/create-workspace.component";
 import { CreateBlockSolutionComponent } from "./problems/create-block-problem/create-block-solution/create-block-solution.component";
 import { ClassesComponent } from "./class-components/classes/classes.component";
+import { ClassComponent } from "./class-components/class/class.component";
+import { AssignmentsComponent } from "./class-components/assignments/assignments.component";
+import { ClassGuard } from "./class-components/class.guard";
 
 const appRoutes: Routes = [
     {path: "", component: HomeComponent},
     {path: "login", component: LoginComponent},
     {path: "sign-up/:userType", component: SignUpComponent},
     {path: "classes", component: ClassesComponent, canActivate: [AuthGuard]},
+    {path: "class/:classId", component: ClassComponent, canActivate: [AuthGuard, ClassGuard], children: [
+        {path: "", component: AssignmentsComponent},
+        {path: "students", component: AssignmentsComponent},
+        {path: "progress", component: AssignmentsComponent}
+    ]},
     // {path: "class/:code/:class_id", component: ClassComponent, canActivate: [AuthGuard], children: [
     //     {path: "class-list", component: ClassListComponent, canActivate: [TeacherGuard]},
     //     {path: "create-block-problem", component: CreateBlockProblemComponent, canActivate: [TeacherGuard], children: [
@@ -35,7 +43,7 @@ const appRoutes: Routes = [
 @NgModule({
     imports: [RouterModule.forRoot(appRoutes, {paramsInheritanceStrategy: 'always'})],
     exports: [RouterModule],
-    providers: [AuthGuard, TeacherGuard]
+    providers: [AuthGuard, TeacherGuard, ClassGuard]
 
 })
 export class AppRoutingModule {

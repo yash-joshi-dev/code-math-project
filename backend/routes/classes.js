@@ -59,15 +59,17 @@ router.get("/", checkAuth, async (req, res, next) => {
         const unitsMapping = classes[i].units_mapping.join(", ");
         let unitsData = [];
 
-        if (role === "teacher" && unitsMapping.length > 0) {
-            sql = `SELECT units.id, units.name, units.is_released, units.content_mapping, unit_owners.is_owner, unit_owners.rights
-                        FROM units INNER JOIN unit_owners ON units.id = unit_owners.unit_id WHERE unit_owners.teacher_id = ${req.userData.id}
-                        AND units.id IN (${unitsMapping}) ORDER BY FIELD(units.id, ${unitsMapping})`;
-            unitsData = (await conn.query(sql))[0];
-        } else if (role === "student") {
-          sql = `SELECT * FROM units WHERE id IN (${unitsMapping}) AND is_released = 1 ORDER BY FIELD(id, ${unitsMapping})`;
+        if(unitsMapping.length > 0) {
+          if (role === "teacher") {
+              sql = `SELECT units.id, units.name, units.is_released, units.content_mapping, unit_owners.is_owner, unit_owners.rights
+                          FROM units INNER JOIN unit_owners ON units.id = unit_owners.unit_id WHERE unit_owners.teacher_id = ${req.userData.id}
+                          AND units.id IN (${unitsMapping}) ORDER BY FIELD(units.id, ${unitsMapping})`;
+          } else if (role === "student") {
+            sql = `SELECT * FROM units WHERE id IN (${unitsMapping}) AND is_released = 1 ORDER BY FIELD(id, ${unitsMapping})`;
+          }
           unitsData = (await conn.query(sql))[0];
         }
+
         classes[i].units = unitsData;
       }
     
@@ -83,14 +85,15 @@ router.get("/", checkAuth, async (req, res, next) => {
 //get a single class by id (retrieve full content, with units and problems and lessons within them?)
 //check auth, check if in class; and if approved for students; check if class exists beforehand
 router.get("/:class_id", checkAuth, async (req, res, next) => {
+  const role = req.userData.role;
   await dbConnection(
     async (conn) => {
       //get class info
       let sql;
-      if (req.userData.role === "student") {
-        sql = `SELECT id, name, code FROM classes WHERE id=${req.params.class_id}`;
-      } else if (req.userData.role === "teacher") {
-        sql = `SELECT classes.id, classes.name, classes.code, class_owners.is_owner, class_owners.rights FROM classes 
+      if (role === "student") {
+        sql = `SELECT id, name, code, units_mapping FROM classes WHERE id=${req.params.class_id}`;
+      } else if (role === "teacher") {
+        sql = `SELECT classes.id, classes.name, classes.code, classes.units_mapping, class_owners.is_owner, class_owners.rights FROM classes 
                 INNER JOIN class_owners ON class_owners.class_id = classes.id WHERE class_owners.teacher_id = ${req.userData.id};`;
       }
       let classData = (await conn.query(sql))[0][0];
@@ -100,39 +103,45 @@ router.get("/:class_id", checkAuth, async (req, res, next) => {
       let teacherNames = (await conn.query(sql))[0];
       classData.teacher_names = [];
       for (const teacherName of teacherNames) {
-        classData.teacher_names.push(teacherName);
+        classData.teacher_names.push(teacherName.teacher_name);
       }
 
       //add on unit info
       //all units ordered by the unit_mapping
       const unitsMapping = classData.units_mapping.join(", ");
+      let unitsData = [];
 
-      if (role === "teacher") {
-        sql = `SELECT units.id, units.name, units.is_released, units.content_mapping, unit_owners.is_owner, unit_owners.rights
+      if (unitsMapping.length > 0) {
+        if (role === "teacher") {
+          sql = `SELECT units.id, units.name, units.is_released, units.content_mapping, unit_owners.is_owner, unit_owners.rights
                         FROM units INNER JOIN unit_owners ON units.id = unit_owners.unit_id WHERE unit_owners.teacher_id = ${req.userData.id}
                         AND units.id IN (${unitsMapping}) ORDER BY FIELD(units.id, ${unitsMapping})`;
-      } else if (role === "student") {
-        sql = `SELECT * FROM units WHERE id IN (${unitsMapping}) AND is_released = 1 ORDER BY FIELD(id, ${unitsMapping})`;
+        } else if (role === "student") {
+          sql = `SELECT * FROM units WHERE id IN (${unitsMapping}) AND is_released = 1 ORDER BY FIELD(id, ${unitsMapping})`;
+        }
+        unitsData = (await conn.query(sql))[0];
       }
-      let unitsData = (await conn.query(sql))[0];
 
       //for every unit, retrieve all the problems and lessons within it and order them according to the content-mapping
       for (const unit of unitsData) {
         const contentMapping = unit.content_mapping.join(", ");
 
         //if teacher, content data with rights in is owner, if student, get with status
-        if (role === "teacher") {
-          sql = `SELECT content.id, content.name, content.type, content_owners.rights, content_owners.is_owner
+            unit.content = [];
+            if (contentMapping.length > 0) {
+              if (role === "teacher") {
+                sql = `SELECT content.id, content.name, content.type, content_owners.rights, content_owners.is_owner
                             FROM content INNER JOIN content_owners ON content.id = content_owners.id WHERE content_owners.teacher_id = ${req.userData.id}
                             AND content.id IN (${contentMapping}) ORDER BY FIELD(content.id, ${contentMapping})`;
-        } else if (role === "student") {
-          sql = `SELECT content.id, content.name, content.type, student_progress.status FROM content 
+              } else if (role === "student") {
+                sql = `SELECT content.id, content.name, content.type, student_progress.status FROM content 
                             INNER JOIN student_progress ON content.id = student_progress.content_id
                             WHERE content.id IN (${contentMapping}) AND student_progress.unit_id = ${unit.id} AND student_progress.class_id = ${req.params.class_id}
                             AND student_id = ${req.userData.id} ORDER BY FIELD(content.id, ${contentMapping})`;
-        }
+              }
 
-        unit.content = (await conn.query(sql))[0];
+              unit.content = (await conn.query(sql))[0];
+            }
       }
       classData.units = unitsData;
 
@@ -238,9 +247,9 @@ router.put("/:class_id", checkAuth, async (req, res, next) => {
       sql = "UPDATE classes SET ? WHERE id=" + req.params.class_id;
       await conn.query(sql, classData);
 
-      //update teacher owner name
-      sql = `UPDATE class_owners SET teacher_name = "${req.body.teacherName}" WHERE teacher_id = ${req.userData.id} AND class_id = ${req.params.class_id}`;
-      await conn.query(sql);
+      // //update teacher owner name
+      // sql = `UPDATE class_owners SET teacher_name = "${req.body.teacherName}" WHERE teacher_id = ${req.userData.id} AND class_id = ${req.params.class_id}`;
+      // await conn.query(sql);
       return res.status(200).json({ message: "Succesfully modified class." });
     },
     res,

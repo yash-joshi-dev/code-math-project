@@ -4,6 +4,8 @@ import { EditClassModalComponent } from '../edit-class-modal/edit-class-modal.co
 import { ClassService } from '../../class.service';
 import { Teacher } from '../../teacher.model';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { Class } from '../../class.model';
+import { AuthService } from 'src/app/authorization/auth.service';
 
 @Component({
   selector: 'app-share-class-modal',
@@ -17,9 +19,10 @@ export class ShareClassModalComponent implements OnInit {
   readonly columns: string[] = ['name', 'email', 'access', 'actions'];
 
   constructor(
-    public dialogRef: MatDialogRef<EditClassModalComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: { classId: number },
-    private classService: ClassService
+    public dialogRef: MatDialogRef<ShareClassModalComponent>,
+    @Inject(MAT_DIALOG_DATA) public data: { classData: Class },
+    private classService: ClassService,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
@@ -36,7 +39,7 @@ export class ShareClassModalComponent implements OnInit {
 
   setTeachers() {
     //get all teachers for the class
-    this.classService.getClassTeachers(this.data.classId).subscribe({
+    this.classService.getClassTeachers(this.data.classData.id).subscribe({
       next: (teachers) => {
         this.teachers = teachers;
       },
@@ -44,7 +47,7 @@ export class ShareClassModalComponent implements OnInit {
   }
 
   onSubmit() {
-    this.classService.shareClass(this.data.classId, this.shareClassForm.value.emailAddress, this.shareClassForm.value.rights).subscribe({
+    this.classService.shareClass(this.data.classData.id, this.shareClassForm.value.emailAddress, this.shareClassForm.value.rights).subscribe({
       next: (response) => {
         this.setTeachers();
       }
@@ -52,11 +55,28 @@ export class ShareClassModalComponent implements OnInit {
   }
 
   removeTeacher(teacher: Teacher) {
-    this.classService.removeClassTeacher(this.data.classId, teacher.id).subscribe({
+    this.classService.removeClassTeacher(this.data.classData.id, teacher.id).subscribe({
       next: (response) => {
-        this.setTeachers();
+
+        //if teacher deleted themselves, immediately close the popup with true flag
+        if(teacher.id === this.authService.getUserData().id) {
+          this.dialogRef.close(true);
+        }
+        else {
+          this.setTeachers();
+        }
       }
     })
+  }
+
+  onSave() {
+
+    //set the current teachers in the class to the teachers here
+    this.data.classData.teacherNames = this.teachers.map((teacherData) => teacherData.name);
+
+    //close dialog
+    this.dialogRef.close(false);
+
   }
 
 }

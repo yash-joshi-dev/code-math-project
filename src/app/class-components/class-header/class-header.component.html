@@ -1,0 +1,26 @@
+<nav class="navbar navbar-expand-lg navbar-light">
+
+    <!-- Left-justified text -->
+    <h6 class="mr-auto">{{classData.name}}</h6>
+
+    <!-- Centered Links -->
+    <ul class="navbar-nav mx-auto">
+      <li class="nav-item">
+        <a class="nav-link" routerLink="./" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Assignments</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" routerLink="students" routerLinkActive="active">Students</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" routerLink="progress" routerLinkActive="active">Progess</a>
+      </li>
+    </ul>
+
+    <!-- Right-justified button -->
+    <app-edit-share-menu class="ml-auto"
+        *ngIf="classData.rights !== 'viewing'" 
+        (editClick)="onEditClass()"
+        (deleteClick)="onDeleteClass()"
+        (shareClick)="onShareClass()"
+    ></app-edit-share-menu>
+</nav>

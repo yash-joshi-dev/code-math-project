@@ -70,7 +70,7 @@ async function shareClass(classId, teacherData, email, rights, conn, res) {
     //now share every unit with the teacher
     const unitIds = (await conn.query(`SELECT units_mapping FROM classes WHERE id = ${classId}`))[0][0].units_mapping;
     for(const unitId of unitIds) {
-        await shareUnit(unitId, taecherData.id, email, rights, conn, res);
+        await shareUnit(unitId, teacherData.id, email, rights, conn, res);
     }
 
 }

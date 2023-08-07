@@ -24,7 +24,7 @@ export class EditClassModalComponent implements OnInit {
 
   ngOnInit(): void {
     this.classData = this.data.classData;
-    this.units = this.classData.units;
+    this.units = [...this.classData.units];
 
     this.editClassForm = new FormGroup({
       name: new FormControl(this.classData.name, [
@@ -58,6 +58,7 @@ export class EditClassModalComponent implements OnInit {
         //update existing values of class
         this.classData.name = this.editClassForm.value.name;
         this.classData.code = this.editClassForm.value.code;
+        this.classData.units = this.units;
 
         //close finally
         this.dialogRef.close();

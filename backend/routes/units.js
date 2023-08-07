@@ -5,6 +5,7 @@ const checkAuth = require('../middleware/check_auth');
 const checkTeacher = require('../middleware/check_teacher');
 const checkInClass = require('../middleware/check_in_class');
 const checkStudent = require('../middleware/check_student');
+const check_auth = require('../middleware/check_auth');
 
 //UNITS:
 // for /units/ have GET POST (get all for a particular teacher only)
@@ -51,63 +52,77 @@ router.post("/", async (req, res, next) => {
 
         await conn.query(`INSERT INTO unit_owners SET ?`, newRecordData);
 
-        req.status(201).json({message: "Successfully created unit!"});
+        req.status(201).json({message: "Successfully created unit!", newUnitData: {
+            id: newUnitId,
+            name: req.body.name,
+            is_released: req.body.isReleased,
+            content_mapping: [],
+            is_owner: true,
+            rights: 'editing',
+            content: []
+        }});
     }, res, 500, "Could not create unit.")
 
 })
 
 //check if person is authenticated and in the class
-router.get("/:class_id", async (req, res, next) => {
+router.get("/:class_id", check_auth, async (req, res, next) => {
     const role = req.userData.role;
 
     await dbConnection(async (conn) => {
-            //get class info
-            let sql = `SELECT units_mapping FROM classes WHERE id=${req.params.class_id}`;
-            let classData = (await conn.query(sql))[0][0];
+        //get class info
+        let sql = `SELECT units_mapping FROM classes WHERE id=${req.params.class_id}`;
+        let classData = (await conn.query(sql))[0][0];
 
-            //all units ordered by the unit_mapping
-            const unitsMapping = classData.units_mapping.join(", ");
+        //all units ordered by the unit_mapping
+        const unitsMapping = classData.units_mapping.join(", ");
 
-            if(role === "teacher") {
-                sql = `SELECT units.id, units.name, units.is_released, units.content_mapping, unit_owners.is_owner, unit_owners.rights
-                        FROM units INNER JOIN unit_owners ON units.id = unit_owners.unit_id WHERE unit_owners.teacher_id = ${req.userData.id}
-                        AND units.id IN (${unitsMapping}) ORDER BY FIELD(units.id, ${unitsMapping})`;
-            }
-            else if(role === "student") {
-                sql = `SELECT * FROM units WHERE id IN (${unitsMapping}) AND is_released = 1 ORDER BY FIELD(id, ${unitsMapping})`
-            }
-            let unitsData = (await conn.query(sql))[0];
+        let unitsData = [];
 
-            //for every unit, retrieve all the problems and lessons within it and order them according to the content-mapping
-            for(const unit of unitsData) {
+        if (unitsMapping.length > 0) {
+          if (role === "teacher") {
+            sql = `SELECT units.id, units.name, units.is_released, units.content_mapping, unit_owners.is_owner, unit_owners.rights
+                          FROM units INNER JOIN unit_owners ON units.id = unit_owners.unit_id WHERE unit_owners.teacher_id = ${req.userData.id}
+                          AND units.id IN (${unitsMapping}) ORDER BY FIELD(units.id, ${unitsMapping})`;
+          } else if (role === "student") {
+            sql = `SELECT * FROM units WHERE id IN (${unitsMapping}) AND is_released = 1 ORDER BY FIELD(id, ${unitsMapping})`;
+          }
+          unitsData = (await conn.query(sql))[0];
+        }
 
-                const contentMapping = unit.content_mapping.join(", ");
+        //for every unit, retrieve all the problems and lessons within it and order them according to the content-mapping
+        for(const unit of unitsData) {
 
-                //if teacher, content data with rights in is owner, if student, get with status
-                if(role === "teacher") {
-                    sql = `SELECT content.id, content.name, content.type, content_owners.rights, content_owners.is_owner
+            const contentMapping = unit.content_mapping.join(", ");
+
+            //if teacher, content data with rights in is owner, if student, get with status
+            unit.content = [];
+            if(contentMapping.length > 0) {
+                if (role === "teacher") {
+                sql = `SELECT content.id, content.name, content.type, content_owners.rights, content_owners.is_owner
                             FROM content INNER JOIN content_owners ON content.id = content_owners.id WHERE content_owners.teacher_id = ${req.userData.id}
                             AND content.id IN (${contentMapping}) ORDER BY FIELD(content.id, ${contentMapping})`;
-                }
-                else if(role === "student") {
-                    sql = `SELECT content.id, content.name, content.type, student_progress.status FROM content 
+                } else if (role === "student") {
+                sql = `SELECT content.id, content.name, content.type, student_progress.status FROM content 
                             INNER JOIN student_progress ON content.id = student_progress.content_id
                             WHERE content.id IN (${contentMapping}) AND student_progress.unit_id = ${unit.id} AND student_progress.class_id = ${req.params.class_id}
                             AND student_id = ${req.userData.id} ORDER BY FIELD(content.id, ${contentMapping})`;
                 }
 
                 unit.content = (await conn.query(sql))[0];
-
             }
-            res.status(200).json({
-            units: unitsData
-            });
+
+
+        }
+        res.status(200).json({
+        units: unitsData
+        });
     }, res, 401, "Units cannot be accessed.")
 
 })
 
 //check if editing, authenticated teacher in the class
-router.post("/:class_id", async (req, res, next) => {
+router.post("/:class_id", checkAuth, async (req, res, next) => {
 
 
     const newUnitData = {
@@ -142,7 +157,15 @@ router.post("/:class_id", async (req, res, next) => {
         //add into class units table
         await conn.query(`INSERT INTO class_units SET ?`, {class_id: req.params.class_id, unit_id: newUnitId});
 
-        res.status(201).json({message: "Successfully created unit!"});
+        res.status(201).json({message: "Successfully created unit!", newUnitData: {
+            id: newUnitId,
+            name: req.body.name,
+            is_released: req.body.isReleased,
+            content_mapping: [],
+            is_owner: true,
+            rights: 'editing',
+            content: []
+        }});
     }, res, 500, "Could not create unit.")
 
 });
@@ -150,7 +173,7 @@ router.post("/:class_id", async (req, res, next) => {
 
 //make sure no new problems or lessons are added to the content_mapping
 //make sure an authenticated editing teacher
-router.put("/:unit_id", async (req, res, next) => {
+router.put("/:unit_id", checkAuth, async (req, res, next) => {
 
     const postData = {
         name: req.body.name,
@@ -160,8 +183,7 @@ router.put("/:unit_id", async (req, res, next) => {
 
     await dbConnection(async (conn) => {
         //check if previously released or not
-        const unitData = (await conn.query(`SELECT * FROM units WHERE unit_id = ${req.params.unit_id}`))[0][0].is_released;
-
+        const unitData = (await conn.query(`SELECT * FROM units WHERE id = ${req.params.unit_id}`))[0][0];
         if(unitData.is_released && !req.body.isReleased) {
             await conn.query(`DELETE FROM student_progress WHERE unit_id = ${req.params.unit_id}`);
         }
@@ -205,26 +227,30 @@ router.put("/:unit_id", async (req, res, next) => {
 
 });
 
-router.delete("/:unit_id", checkAuth, checkTeacher, checkInClass, async (req, res, next) => {
+router.delete("/:unit_id", checkAuth, async (req, res, next) => {
 
     await dbConnection(async (conn) => {
 
         //delete from units mapping array in any classes records that had this as a unit
         //first get all classes which had this as a unit
         const unitClasses = (await conn.query(`SELECT * FROM classes WHERE id IN (SELECT class_id FROM class_units WHERE unit_id = ${req.params.unit_id})`))[0];
-
+        console.log(unitClasses);
         //for each class, delete the unit from the units_mapping array
         for(let unitClass of unitClasses) { 
-
+            
             //can check if index is -1, but shouldn't be EVER because 
-            unitClass.units_mapping.splice(unitClass.units_mapping.indexOf(req.params.unit_id), 1);
-            await conn.query(`UPDATE classes SET units_mapping = ${unitClass.units_mapping} WHERE id = ${unitClass.id}`);
+            const removingIndex = unitClass.units_mapping.indexOf(parseInt(req.params.unit_id));
+            if(removingIndex === -1) {
+                throw new Error("Something went wrong");
+            }
+            unitClass.units_mapping.splice(removingIndex, 1);
+            await conn.query(`UPDATE classes SET units_mapping = '${JSON.stringify(unitClass.units_mapping)}' WHERE id = ${unitClass.id}`);
         }
 
         //delete unit
         await conn.query("DELETE FROM units WHERE id=" + req.params.unit_id);
         res.status(200).json({message: "Unit successfully deleted."})
-    }, res, 401, "Unit deletetion failed.")
+    }, res, 401, "Unit deletion failed.")
 
 });
 

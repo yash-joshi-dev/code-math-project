@@ -1,0 +1,22 @@
+.class-card {
+
+    height: 270px;
+    width: 300px;
+
+}
+
+.class-banner {
+    height: 150px;
+}
+
+mat-card-title:hover {
+    text-decoration: underline;
+}
+
+app-edit-share-menu {
+
+    position: absolute;
+    top: 160px;
+    right: 5px;
+
+}

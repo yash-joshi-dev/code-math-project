@@ -1,0 +1,21 @@
+<h1 mat-dialog-title>Edit Unit</h1>
+<form [formGroup]="editUnitForm" (ngSubmit)="onSubmit()">
+    <mat-dialog-content>
+            <mat-form-field appearance="fill">
+                <mat-label>Name:</mat-label>
+                <input matInput formControlName="name">
+                <mat-error *ngIf="!editUnitForm.get('name').valid && editUnitForm.get('name').touched">Please enter a name.</mat-error>
+            </mat-form-field>
+            <mat-checkbox formControlName="isReleased">Release it?</mat-checkbox>
+            <p>Change Content Ordering: </p>
+            <div cdkDropList class="example-list" (cdkDropListDropped)="drop($event)">
+                <div class="example-box" *ngFor="let contentData of content" cdkDrag>
+                    {{ contentData.name }}
+                </div>
+            </div>
+    </mat-dialog-content>
+    <mat-dialog-actions>
+        <button mat-raised-button [disabled]="!editUnitForm.valid" type="submit" color="primary">Save!</button>
+        <button mat-button type="button" [mat-dialog-close]="">Cancel</button>
+    </mat-dialog-actions>
+</form>

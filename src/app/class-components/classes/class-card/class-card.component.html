@@ -1,0 +1,14 @@
+<mat-card class="class-card">
+    <img (click)="onClassClicked(class)" class="class-banner" mat-card-image src="../../../../assets/math-equations.jpg" alt="Photo of math-equations.">
+    <mat-card-header class="class-info">
+        <mat-card-title (click)="onClassClicked(class)">{{class.name}}</mat-card-title>
+        <mat-card-subtitle>{{class.teacherNames.join(", ")}}</mat-card-subtitle>
+        <mat-card-subtitle *ngIf="isTeacher">{{class.code}}</mat-card-subtitle>
+        <app-edit-share-menu 
+            *ngIf="isTeacher && class.rights !== 'viewing'" 
+            (editClick)="onEditClass(class)"
+            (deleteClick)="onDeleteClass(class)"
+            (shareClick)="onShareClass(class)"
+        ></app-edit-share-menu>
+    </mat-card-header>
+</mat-card>

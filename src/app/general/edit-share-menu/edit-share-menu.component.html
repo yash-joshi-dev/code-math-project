@@ -1,0 +1,17 @@
+<button class="menu-button" mat-icon-button [matMenuTriggerFor]="menu" aria-label="Edit menu.">
+    <mat-icon>more_vert</mat-icon>
+</button>
+<mat-menu #menu="matMenu">
+    <button mat-menu-item (click)="onEditClicked()">
+        <mat-icon>create</mat-icon>
+        <span>Edit</span>
+    </button>
+    <button mat-menu-item (click)="onShareClicked()">
+        <mat-icon>person_add</mat-icon>
+        <span>Share</span>
+    </button>
+    <button mat-menu-item (click)="onDeleteClicked()">
+        <mat-icon>delete_sweep</mat-icon>
+        <span>Delete</span>
+    </button>
+</mat-menu>

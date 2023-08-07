@@ -1,0 +1,15 @@
+<h1 mat-dialog-title>Create a Unit</h1>
+<form [formGroup]="createUnitForm" (ngSubmit)="onSubmit()">
+    <mat-dialog-content>
+        <mat-form-field appearance="fill">
+            <mat-label>Name:</mat-label>
+            <input matInput formControlName="name">
+            <mat-error *ngIf="!createUnitForm.get('name').valid && createUnitForm.get('name').touched">Please enter a name.</mat-error>
+        </mat-form-field>
+        <mat-checkbox formControlName="isReleased">Release it?</mat-checkbox>
+    </mat-dialog-content>
+    <mat-dialog-actions>
+        <button type="submit" mat-raised-button color="primary" [disabled]="!createUnitForm.valid">Create!</button>
+        <button type="button" mat-button mat-dialog-close="">Cancel</button>
+    </mat-dialog-actions>
+</form>

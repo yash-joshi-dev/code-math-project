@@ -112,7 +112,7 @@ router.post("/", async(req, res, next) => {
         await conn.query(`INSERT INTO content_tags SET ?`, tags);
 
         //add any new tags into teacher's thing
-        let currentTags = (await conn.query(`SELECT tag FROM definitions WHERE teacher_id = ${req.userData.id} OR teacher_id = -1`))[0];
+        let currentTags = (await conn.query(`SELECT tag FROM tags WHERE teacher_id = ${req.userData.id} OR teacher_id = -1`))[0];
         currentTags = currentTags.map(tagData => tagData.tag);
         let newTags = [];
         req.body.tags.forEach(tag => {
@@ -136,7 +136,13 @@ router.post("/", async(req, res, next) => {
             default: console.log("Something died in the content table.");
         }
 
-        res.status(201).json({message: "Content created successfully."});
+        res.status(201).json({message: "Content created successfully.", newContentData: {
+            id: newContentId,
+            name: req.body.name,
+            type: req.body.type,
+            is_owner: true,
+            rights: 'editing',
+        }});
 
     }, res, 500, "Content creation failed.")
 
@@ -151,7 +157,7 @@ router.post("/", async(req, res, next) => {
 
 //check if authenticated teacher with editing rights trying to do this thats in the class
 //create a new piece of content in the class
-router.post("/:unit_id", async (req, res, next) => {
+router.post("/:unit_id", checkAuth, async (req, res, next) => {
 
     await dbConnection(async (conn) => {
 
@@ -227,14 +233,20 @@ router.post("/:unit_id", async (req, res, next) => {
 
         //create right type of problem
         switch(req.body.type) {
-            case "lesson": createLesson(conn, req, newContentId);
+            case "lesson":  createLesson(conn, req, newContentId);
                             break;
             case "block":  createBlockProblem(conn, req, newContentId);
                             break;
             default: console.log("Something died in the content table.");
         }
 
-        res.status(201).json({message: "Content creation successful."})
+        res.status(201).json({message: "Content creation successful.", newContentData: {
+            id: newContentId,
+            name: req.body.name,
+            type: req.body.type,
+            is_owner: true,
+            rights: 'editing'
+        }})
 
     }, res, 500, "Content creation failed.")
 

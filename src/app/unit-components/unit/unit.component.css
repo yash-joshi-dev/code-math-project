@@ -1,0 +1,12 @@
+.unit-card {
+    width: 700px;
+    margin: 20px auto;
+}
+
+mat-card-header {
+    border-bottom: 0.5px solid grey;
+}
+
+mat-card-title {
+    margin-top: 15px;
+}

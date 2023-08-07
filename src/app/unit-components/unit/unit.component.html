@@ -1,0 +1,44 @@
+<mat-card class="unit-card">
+    <mat-card-header class="d-flex justify-content-between">
+        <mat-card-title>{{unitData.name}}</mat-card-title>
+
+        <div *ngIf="isTeacher && !studentProgressView">
+            <button mat-icon-button aria-label="View Unit Progress">
+                <mat-icon>bar_chart</mat-icon>
+            </button>
+            <button mat-icon-button [matMenuTriggerFor]="newContentMenu" aria-label="Add New Content" *ngIf="unitData.rights === 'editing'">
+                <mat-icon>note_add</mat-icon>
+            </button>
+            <mat-menu #newContentMenu="matMenu">
+                <button mat-menu-item (click)="onCreateNewLesson()">
+                    <mat-icon>add</mat-icon>
+                    <span>Lesson</span>
+                </button>
+                <button mat-menu-item>
+                    <mat-icon>add</mat-icon>
+                    <span>Block Problem</span>
+                </button>
+                <button mat-menu-item>
+                    <mat-icon>add</mat-icon>
+                    <span>Ordering Problem</span>
+                </button>
+                <button mat-menu-item>
+                    <mat-icon>add</mat-icon>
+                    <span>Pseudocode Problem</span>
+                </button>
+                <button mat-menu-item>
+                    <mat-icon>add</mat-icon>
+                    <span>Tracing Problem</span>
+                </button>
+            </mat-menu>
+            <app-edit-menu 
+                *ngIf="unitData.rights === 'editing'" 
+                (editClick)="onEditUnit()"
+                (deleteClick)="onDeleteUnit()"
+            ></app-edit-menu>
+        </div>
+    </mat-card-header>
+    <mat-card-content>
+        list all contents
+    </mat-card-content>
+</mat-card>

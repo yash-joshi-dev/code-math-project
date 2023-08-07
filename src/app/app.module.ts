@@ -34,9 +34,8 @@ import {MatInputModule} from '@angular/material/input';
 import {MatMenuModule} from '@angular/material/menu';
 import {MatIconModule} from '@angular/material/icon';
 import { MatListModule } from '@angular/material/list';
-import { AssignmentsComponent } from './classes/class/assignments/assignments.component';
 // import { ClassHeaderComponent } from './classes/class/class-header/class-header.component';
-import { NewProblemSetFormComponent, ProblemSetsComponent } from './problem-sets/problem-sets.component';
+import { NewProblemSetFormComponent, ProblemSetsComponent } from './zproblem-sets/problem-sets.component';
 import {MatCheckboxModule} from '@angular/material/checkbox';
 import {MatExpansionModule} from '@angular/material/expansion';
 import { EditMenuComponent } from './general/edit-menu/edit-menu.component';
@@ -54,7 +53,17 @@ import { ClassComponent } from './class-components/class/class.component';
 import { ConfirmationModalComponent } from './general/confirmation-modal/confirmation-modal.component';
 import { EditClassModalComponent } from './class-components/classes/edit-class-modal/edit-class-modal.component';
 import { ShareClassModalComponent } from './class-components/classes/share-class-modal/share-class-modal.component';
-
+import { ClassHeaderComponent } from './class-components/class-header/class-header.component';
+import { ClassCardComponent } from './class-components/classes/class-card/class-card.component';
+import { DeleteClassModalComponent } from './class-components/classes/delete-class-modal/delete-class-modal.component';
+import { AssignmentsComponent } from "./class-components/assignments/assignments.component";
+import { UnitComponent } from './unit-components/unit/unit.component';
+import { EditShareMenuComponent } from './general/edit-share-menu/edit-share-menu.component';
+import { CreateUnitModalComponent } from './unit-components/create-unit-modal/create-unit-modal.component';
+import { EditUnitModalComponent } from './unit-components/edit-unit-modal/edit-unit-modal.component';
+import { ShareUnitModalComponent } from './unit-components/share-unit-modal/share-unit-modal.component';
+import { DeleteUnitModalComponent } from './unit-components/delete-unit-modal/delete-unit-modal.component';
+import { CreateLessonModalComponent } from './content-components/create-lesson-modal/create-lesson-modal.component';
 
 @NgModule({
   declarations: [
@@ -80,6 +89,16 @@ import { ShareClassModalComponent } from './class-components/classes/share-class
     ConfirmationModalComponent,
     EditClassModalComponent,
     ShareClassModalComponent,
+    ClassHeaderComponent,
+    ClassCardComponent,
+    DeleteClassModalComponent,
+    UnitComponent,
+    EditShareMenuComponent,
+    CreateUnitModalComponent,
+    EditUnitModalComponent,
+    ShareUnitModalComponent,
+    DeleteUnitModalComponent,
+    CreateLessonModalComponent,
   ],
   imports: [
     BrowserModule,
@@ -115,7 +134,7 @@ import { ShareClassModalComponent } from './class-components/classes/share-class
     { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true },
     {
       provide: MAT_DIALOG_DEFAULT_OPTIONS,
-      useValue: { maxWidth: 600, hasBackdrop: true },
+      useValue: {hasBackdrop: true },
     },
     { provide: TUI_SANITIZER, useClass: NgDompurifySanitizer },
   ],

@@ -61,6 +61,12 @@ router.delete("/:unit_id/:teacher_id", async(req, res, next) => {
     await dbConnection(async (conn) => {
 
         await conn.query(`DELETE FROM unit_owners WHERE unit_id = ${req.params.unit_id} AND teacher_id = ${req.params.teacher_id}`);
+
+        const contentMapping = (await conn.query(`SELECT content_mapping FROM units WHERE id = ${req.params.unit_id}`))[0][0].content_mapping;
+        if(contentMapping.length > 0) {
+            await conn.query(`DELET FROM content_owners WHERE content_id IN ${contentMapping.join(", ")} AND teacher_id = ${req.params.teacher_id}`);
+        }
+
         res.status(200).json({message: "Un-shared with teacher successfully."})
         
     }, res, 500, "Deleting teacher failed.")
