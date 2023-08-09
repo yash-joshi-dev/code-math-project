@@ -131,7 +131,7 @@ router.get("/:class_id", checkAuth, async (req, res, next) => {
             if (contentMapping.length > 0) {
               if (role === "teacher") {
                 sql = `SELECT content.id, content.name, content.type, content_owners.rights, content_owners.is_owner
-                            FROM content INNER JOIN content_owners ON content.id = content_owners.id WHERE content_owners.teacher_id = ${req.userData.id}
+                            FROM content INNER JOIN content_owners ON content.id = content_owners.content_id WHERE content_owners.teacher_id = ${req.userData.id}
                             AND content.id IN (${contentMapping}) ORDER BY FIELD(content.id, ${contentMapping})`;
               } else if (role === "student") {
                 sql = `SELECT content.id, content.name, content.type, student_progress.status FROM content 
@@ -139,7 +139,6 @@ router.get("/:class_id", checkAuth, async (req, res, next) => {
                             WHERE content.id IN (${contentMapping}) AND student_progress.unit_id = ${unit.id} AND student_progress.class_id = ${req.params.class_id}
                             AND student_id = ${req.userData.id} ORDER BY FIELD(content.id, ${contentMapping})`;
               }
-
               unit.content = (await conn.query(sql))[0];
             }
       }

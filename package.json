@@ -39,6 +39,7 @@
     "@taiga-ui/layout": "^3.39.1",
     "@taiga-ui/styles": "^3.39.1",
     "@tinkoff/ng-dompurify": "3.0.0",
+    "@tinymce/tinymce-angular": "^7.0.0",
     "bcrypt": "^5.0.1",
     "blockly": "^9.2.1",
     "body-parser": "^1.20.0",

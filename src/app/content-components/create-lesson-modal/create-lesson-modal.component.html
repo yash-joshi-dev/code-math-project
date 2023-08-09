@@ -1,12 +1,12 @@
-<form [formGroup]="createLessonForm" (ngSubmit)="onSubmit()">
+<form [formGroup]="createEditLessonForm" (ngSubmit)="onSubmit()">
 <div class="d-flex flex-column align-items-center">
 
     <!-- Create nav bar like feel at top -->
     <button class="close-button" mat-icon-button [mat-dialog-close]="">
         <mat-icon>close</mat-icon>
     </button>
-    <h6>Create Lesson</h6>
-    <button class="create-button" mat-raised-button [disabled]="!createLessonForm.valid" type="submit" color="primary">Create!</button>
+    <h6>{{action}} Lesson</h6>
+    <button class="create-button" mat-raised-button [disabled]="!createEditLessonForm.valid" type="submit" color="primary">{{action}}!</button>
 
     <hr style="width: 100%">
 
@@ -21,11 +21,22 @@
             <mat-form-field appearance="fill">
                 <mat-label>Name:</mat-label>
                 <input matInput formControlName="name">
-                <mat-error *ngIf="!createLessonForm.get('name').valid && createLessonForm.get('name').touched">Please enter a name.</mat-error>
+                <mat-error *ngIf="!createEditLessonForm.get('name').valid && createEditLessonForm.get('name').touched">Please enter a name.</mat-error>
             </mat-form-field>
 
-                <textarea formControlName="content"></textarea>
-
+            <editor
+                apiKey="52jc5ok3imvi0onsfxi7054gt4ed9xmwbwlzyqmuh7l1bgtp"
+                [init]="{
+                    plugins: 'tinycomments mentions anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks wordcount checklist mediaembed casechange export formatpainter pageembed permanentpen footnotes advtemplate advtable advcode editimage tableofcontents mergetags powerpaste tinymcespellchecker autocorrect a11ychecker typography inlinecss',
+                    toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table mergetags | align lineheight | tinycomments | checklist numlist bullist indent outdent | emoticons charmap | removeformat',
+                    tinycomments_mode: 'embedded',
+                    tinycomments_author: 'Author name',
+                    mergetags_list: [
+                      { value: 'First.Name', title: 'First Name' },
+                      { value: 'Email', title: 'Email' },
+                    ]}"
+                formControlName="content"
+            ></editor>
         </mat-card-content>
     </mat-card>
 
@@ -42,6 +53,7 @@
             <p>Add a definition...</p>
         </mat-card-content>
     </mat-card>
+
 
 </div>
 </form>

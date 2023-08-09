@@ -25,8 +25,7 @@ export class EditUnitModalComponent implements OnInit {
 
   ngOnInit(): void {
     this.unitData = this.data.unitData;
-    console.log(this.unitData);
-    this.content = this.unitData.content;
+    this.content = [...this.unitData.content];
 
     this.editUnitForm = new UntypedFormGroup({
       "name": new UntypedFormControl(this.unitData.name, [
@@ -56,6 +55,7 @@ export class EditUnitModalComponent implements OnInit {
         //update existing values of class
         this.unitData.name = this.editUnitForm.value.name;
         this.unitData.isReleased = this.editUnitForm.value.isReleased;
+        this.unitData.content = this.content;
 
         //close finally
         this.dialogRef.close();

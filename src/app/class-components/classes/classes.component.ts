@@ -3,11 +3,6 @@ import { Class } from '../class.model';
 import { ClassService } from '../class.service';
 import { AuthService } from 'src/app/authorization/auth.service';
 import { MatDialog } from '@angular/material/dialog';
-import { Subscription } from 'rxjs';
-import { ConfirmationModalComponent } from 'src/app/general/confirmation-modal/confirmation-modal.component';
-import { CryptoService } from 'src/app/general/crypto.service';
-import { EditClassModalComponent } from './edit-class-modal/edit-class-modal.component';
-import { ShareClassModalComponent } from './share-class-modal/share-class-modal.component';
 import { ClassStudentsService } from '../class-students.service';
 
 @Component({
@@ -27,7 +22,6 @@ export class ClassesComponent implements OnInit, OnDestroy {
     private classStudentsService: ClassStudentsService,
     private classService: ClassService,
     private authService: AuthService,
-    private cryptoService: CryptoService
   ) {}
 
   ngOnInit(): void {

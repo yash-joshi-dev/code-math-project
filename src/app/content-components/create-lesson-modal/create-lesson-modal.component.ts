@@ -1,7 +1,7 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { Lesson } from '../lesson.model';
-import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
+import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { ContentService } from '../content.service';
 import { Content } from '../content.model';
 
@@ -12,31 +12,60 @@ import { Content } from '../content.model';
 })
 export class CreateLessonModalComponent implements OnInit {
 
-  // editingMode: boolean;
-
-  createLessonForm: UntypedFormGroup;
+  editingMode: boolean;
+  action: string = "Create";
+  createEditLessonForm: FormGroup;
 
   constructor(
     public dialogRef: MatDialogRef<CreateLessonModalComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: { unitId: number},
+    @Inject(MAT_DIALOG_DATA) public data: { unitId: number, contentId: number},
     private contentService: ContentService
   ) { }
 
   ngOnInit(): void {
 
-    // this.editingMode = (this.data.lessonData !== undefined);
-    this.createLessonForm = new UntypedFormGroup({
-      "name" : new UntypedFormControl("", [Validators.required, Validators.maxLength(150)]),
-      "content": new UntypedFormControl("", [Validators.required, Validators.maxLength(65500)])
+    this.editingMode = (this.data.contentId !== undefined);
+
+    this.createEditLessonForm = new FormGroup({
+      "name" : new FormControl("", [Validators.required, Validators.maxLength(150)]),
+      "content": new FormControl("", [Validators.required, Validators.maxLength(65500)])
     })
+
+    //if editing mode, get content data and set values
+    if(this.editingMode) {
+      this.action = "Edit";
+      this.contentService.getContent(this.data.contentId).subscribe({
+        next: (lessonData) => {
+          this.createEditLessonForm.get('name').setValue(lessonData.name);
+          this.createEditLessonForm.get('content').setValue(lessonData.content);
+        }
+      })
+
+    }
 
   }
 
   onSubmit() {
-    if(this.data.unitId) {
+
+    if(this.editingMode) {
+
+      //update content
+      this.contentService.updateContent(this.data.contentId, this.createEditLessonForm.value.name, [], {
+        content: this.createEditLessonForm.value.content,
+        definitionsMapping: []
+      }).subscribe({
+        next: (response) => {
+          this.dialogRef.close({
+            ...this.createEditLessonForm.value,
+          })
+        }
+      })
+
+    }
+    else if(this.data.unitId) {
       //create a unit lesson
-      this.contentService.createUnitContent(this.data.unitId, this.createLessonForm.value.name, "lesson", [], {
-        content: this.createLessonForm.value.content,
+      this.contentService.createUnitContent(this.data.unitId, this.createEditLessonForm.value.name, "lesson", [], {
+        content: this.createEditLessonForm.value.content,
         definitionsMapping: []
       }).subscribe({
         next: (response) => {

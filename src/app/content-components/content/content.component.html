@@ -1,0 +1,14 @@
+<mat-list-item >
+    <div style="width: 100%" class="d-flex justify-content-between">
+        <div style="width: 100%;" (click)="onContentClicked()">
+            <button mat-icon-button>
+                <mat-icon>{{contentData.typeIcon}}</mat-icon>
+            </button>
+            {{contentData.name}}
+        </div>
+        <app-edit-menu *ngIf="isTeacher && !studentProgressView" (editClick)="onEditContent()" (deleteClick)="onDeleteContent()"></app-edit-menu>
+        <button *ngIf="!isTeacher || studentProgressView" mat-icon-button>
+            <mat-icon>{{contentData.statusIcon}}</mat-icon>
+        </button>
+    </div>
+</mat-list-item>

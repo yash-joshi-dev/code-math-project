@@ -1,0 +1,13 @@
+<div class="d-flex justify-content-center">
+    <mat-card *ngIf="!!lessonData.content" style="width: 700px; margin-top: 60px;">
+        <mat-card-header>
+            <mat-card-title>{{lessonData.name}}</mat-card-title>
+        </mat-card-header>
+        <hr>
+        <mat-card-content>
+            <div [innerHTML]="lessonData.content"></div>
+        </mat-card-content>
+    
+    </mat-card>
+</div>
+<!-- later add sidebar (to show progress) and edit menu -->

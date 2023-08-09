@@ -6,6 +6,8 @@ export class Content {
   public rights: string | undefined;
   public status: string | undefined;
   public tags: string[] = [];
+  public typeIcon: string;
+  public statusIcon: string | undefined;
 
 
   constructor(contentData: {
@@ -26,5 +28,25 @@ export class Content {
     if(contentData.tags) {
       this.tags = contentData.tags;
     }
+    switch(this.type) {
+      case "lesson": this.typeIcon = "library_books";
+                     break;
+      default: this.typeIcon = "adjust";
+    }
+
+    if(this.status) {
+      switch(this.status) {
+        case "unread": this.statusIcon = "radio_button_unchecked";
+                       break;
+        case "read": this.statusIcon = "done";
+                      break;
+        case "attempted": this.statusIcon = "timelapse";
+                       break;
+        case "solved": this.statusIcon = "done";
+                       break;
+        default: this.statusIcon = "adjust";
+      }
+    }
+
   }
 }

@@ -64,6 +64,13 @@ import { EditUnitModalComponent } from './unit-components/edit-unit-modal/edit-u
 import { ShareUnitModalComponent } from './unit-components/share-unit-modal/share-unit-modal.component';
 import { DeleteUnitModalComponent } from './unit-components/delete-unit-modal/delete-unit-modal.component';
 import { CreateLessonModalComponent } from './content-components/create-lesson-modal/create-lesson-modal.component';
+import {EditorModule} from '@tinymce/tinymce-angular';
+import { ContentComponent } from './content-components/content/content.component';
+import { DeleteContentModalComponent } from './content-components/delete-content-modal/delete-content-modal.component';
+import { LessonComponent } from './content-components/lesson/lesson.component';
+import { StudentsComponent } from './class-components/students/students.component';
+
+
 
 @NgModule({
     declarations: [
@@ -99,6 +106,10 @@ import { CreateLessonModalComponent } from './content-components/create-lesson-m
         ShareUnitModalComponent,
         DeleteUnitModalComponent,
         CreateLessonModalComponent,
+        ContentComponent,
+        DeleteContentModalComponent,
+        LessonComponent,
+        StudentsComponent,
     ],
     imports: [
         BrowserModule,
@@ -128,6 +139,7 @@ import { CreateLessonModalComponent } from './content-components/create-lesson-m
         TuiAlertModule,
         TuiTableModule,
         TuiSvgModule,
+        EditorModule
     ],
     providers: [
         { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },

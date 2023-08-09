@@ -129,9 +129,9 @@ router.post("/", async(req, res, next) => {
 
         //create right type of problem
         switch(req.body.type) {
-            case "lesson": createLesson(conn, req, newContentId);
+            case "lesson": await createLesson(conn, req, newContentId);
                            break;
-            case "block":  createBlockProblem(conn, req, newContentId);
+            case "block":  await createBlockProblem(conn, req, newContentId);
                            break;
             default: console.log("Something died in the content table.");
         }
@@ -170,17 +170,21 @@ router.post("/:unit_id", checkAuth, async (req, res, next) => {
         const newContentId = (await conn.query(`INSERT INTO content SET ?`, newContentData))[0].insertId;
 
         //add tags into tags table
-        let tags = req.body.tags.map(item => {
-            return {
-                content_id: newContentId,
-                tag: item
-            }
-        })
-        await conn.query(`INSERT INTO content_tags SET ?`, tags);
+        if(req.body.tags.length > 0) {
+            let tags = req.body.tags.map(item => {
+                return {
+                    content_id: newContentId,
+                    tag: item
+                }
+            })
+            await conn.query(`INSERT INTO content_tags SET ?`, tags);
+        }
+        
 
         //add any new tags into teacher's thing
-        let currentTags = (await conn.query(`SELECT tag FROM definitions WHERE teacher_id = ${req.userData.id} OR teacher_id = -1`))[0];
+        let currentTags = (await conn.query(`SELECT tag FROM tags WHERE teacher_id = ${req.userData.id} OR teacher_id = -1`))[0];
         currentTags = currentTags.map(tagData => tagData.tag);
+
         let newTags = [];
         req.body.tags.forEach(tag => {
             
@@ -189,18 +193,26 @@ router.post("/:unit_id", checkAuth, async (req, res, next) => {
             }
 
         });
-        await conn.query(`INSERT INTO tags SET ?`, newTags);
+        if(newTags.length > 0) {
+            await conn.query(`INSERT INTO tags SET ?`, newTags);
+        }
 
-        //add the teacher as an owner
-        await conn.query('INSERT INTO content_owners SET ?', {teacher_id: req.userData.id, content_id: newContentId});
+        //for every teacher owning the unit, insert them as an owner with their rights
+        const unitOwners = (await conn.query(`SELECT teacher_id, rights FROM unit_owners WHERE unit_id = ${req.params.unit_id}`))[0];
+            
+        for(let i = 0; i < unitOwners.length; i++) {
+            const unitOwner = unitOwners[i];
+            await conn.query('INSERT INTO content_owners SET ?', {teacher_id: unitOwner.teacher_id, rights: unitOwner.rights, is_owner: (unitOwner.teacher_id === req.userData.id ? 1 : 0), content_id: newContentId});
+        }
+        
 
         //add the content in the unit content table
         await conn.query('INSERT INTO unit_content SET ?', {unit_id: req.params.unit_id, content_id: newContentId});
 
         //add the content in the unit content mapping array
-        const unitData = (await conn.query(`SELECT * FROM units WHERE unit_id = ${req.params.unit_id}`))[0][0];
+        const unitData = (await conn.query(`SELECT * FROM units WHERE id = ${req.params.unit_id}`))[0][0];
         unitData.content_mapping.push(newContentId);
-        await conn.query('UPDATE units SET ?', {content_mapping: JSON.stringify(unitData.content_mapping)});
+        await conn.query(`UPDATE units SET ? WHERE id = ${req.params.unit_id}`, {content_mapping: JSON.stringify(unitData.content_mapping)});
 
         //add a new record in student progress for every student in every class in which the unit is IF it is released
         if(unitData.is_released) {
@@ -212,8 +224,8 @@ router.post("/:unit_id", checkAuth, async (req, res, next) => {
             for(const classId of classIds) {
                 //get all student ids for each class
                 let sql = `SELECT student_id FROM class_students WHERE class_id = ${classId} AND approved = 1`;
-                const studentIds = (await conn.query(sql)).map(item => {return item.student_id});
-
+                const studentIds = (await conn.query(sql))[0].map(item => {return item.student_id});
+                
                 for(const studentId of studentIds) {
                     const newRecordData = {
                         student_id: studentId,
@@ -228,14 +240,15 @@ router.post("/:unit_id", checkAuth, async (req, res, next) => {
             }
 
             //insert all new records
-            await conn.query(`INSERT INTO student_progress SET ?`, newStudentProgressRecords);
+            console.log(newStudentProgressRecords);
+            if(newStudentProgressRecords.length > 0) await conn.query(`INSERT INTO student_progress SET ?`, newStudentProgressRecords);
         }
 
         //create right type of problem
         switch(req.body.type) {
-            case "lesson":  createLesson(conn, req, newContentId);
+            case "lesson":  await createLesson(conn, req, newContentId);
                             break;
-            case "block":  createBlockProblem(conn, req, newContentId);
+            case "block":  await createBlockProblem(conn, req, newContentId);
                             break;
             default: console.log("Something died in the content table.");
         }
@@ -264,9 +277,9 @@ router.get("/:content_id", async (req, res, next) => {
         let extraContentData;
 
         switch(contentData.type) {
-            case "lesson": extraContentData = getLesson(conn, req, newContentId);
+            case "lesson": extraContentData = await getLesson(conn, req, req.params.content_id);
                            break;
-            case "block":  extraContentData = getBlockProblem(conn, req, newContentId);
+            case "block":  extraContentData = await getBlockProblem(conn, req, req.params.content_id);
                            break;
             default: console.log("Something died in the content table.");
         }
@@ -278,6 +291,7 @@ router.get("/:content_id", async (req, res, next) => {
 
 })
 
+//useless
 router.patch("/:content_id", async (req, res, next) => {
 
     await dbConnection(async (conn) => {
@@ -295,21 +309,21 @@ router.put("/:content_id", async (req, res, next) => {
 
         const newContentData = {
             name: req.body.name,
-            tags: req.body.tags
+            tags: JSON.stringify(req.body.tags)
         }        
 
         //update the content
-        await conn.query(`UPDATE content SET ? WHERE content_id = ${req.params.content_id}`, newContentData);
+        await conn.query(`UPDATE content SET ? WHERE id = ${req.params.content_id}`, newContentData);
 
         //update tags by deleting all for content, then adding all new ones into tags table
-        await conn.query(`DELETE FROM content_tags WHERE content_id = ${req.params.content_id}`);
+        await conn.query(`DELETE FROM content_tags WHERE id = ${req.params.content_id}`);
         let tags = req.body.tags.map(item => {
             return {
-                content_id: newContentId,
+                content_id: req.params.content_id,
                 tag: item
             }
         })
-        await conn.query(`INSERT INTO content_tags SET ?`, tags);
+        if(tags.length > 0) {await conn.query(`INSERT INTO content_tags SET ?`, tags);}
 
         //update every student progress record for this content to unread where the unit its in has been released
         //but since only for released units are records present, that check is unecessary
@@ -317,10 +331,12 @@ router.put("/:content_id", async (req, res, next) => {
 
         //also update stuff according to the content type ---------------------------------------------TODO
         //update right type of problem
-        switch(req.body.type) {
-            case "lesson": updateLesson(conn, req, newContentId);
+        const contentType = (await conn.query(`SELECT type FROM content WHERE id = ${req.params.content_id}`))[0][0].type;
+
+        switch(contentType) {
+            case "lesson": await updateLesson(conn, req, req.params.content_id);
                            break;
-            case "block":  updateBlockProblem(conn, req, newContentId);
+            case "block":  await updateBlockProblem(conn, req, req.params.content_id);
                            break;
             default: console.log("Something died in the content table.");
         }
@@ -345,11 +361,15 @@ router.delete("/:content_id", async (req, res, next) => {
         for(let unit of contentUnits) { 
 
             //can check if index is -1, but shouldn't be EVER because 
-            unit.content_mapping.splice(unit.content_mapping.indexOf(req.params.content_id), 1);
-            await conn.query(`UPDATE units SET content_mapping = ${unit.content_mapping} WHERE id = ${unit.id}`);
+            const index = unit.content_mapping.indexOf(parseInt(req.params.content_id));
+            if(index !== -1) {
+                unit.content_mapping.splice(index, 1);
+                await conn.query(`UPDATE units SET content_mapping = '${JSON.stringify(unit.content_mapping)}' WHERE id = ${unit.id}`);
+            }
+
         }
         
-        await conn.query(`DELETE FROM content WHERE content_id = ${req.params.content_id}`);
+        await conn.query(`DELETE FROM content WHERE id = ${req.params.content_id}`);
         res.status(201).json({message: "Content deleted successfully."});
     }, res, 500, "Content deletion failed.")
 })

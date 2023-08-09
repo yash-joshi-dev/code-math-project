@@ -31,6 +31,10 @@ export class UnitComponent implements OnInit {
     })
   }
 
+  onContentDeleted(index: number) {
+    this.unitData.content.splice(index, 1);
+  }
+
   onViewUnitProgress() {
     //TODO later
   }
