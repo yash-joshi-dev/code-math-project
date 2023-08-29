@@ -7,6 +7,12 @@
         <mat-card-content>
             <div [innerHTML]="lessonData.content"></div>
         </mat-card-content>
+        <mat-card-actions>
+            <div class="d-flex justify-content-between">
+                <button style="background-color: rgb(237, 237, 237);" mat-button [routerLink]="prevContentRoute">Previous</button>
+                <button style="background-color: rgb(237, 237, 237);" mat-button [routerLink]="nextContentRoute">Next</button>
+            </div>
+        </mat-card-actions>
     
     </mat-card>
 </div>

@@ -16,10 +16,10 @@ export class ContentService {
 
     //-----------------------------------------------------------CONTENT ACTIONS
 
-    onOpenContent(contentId: number, contentType: string, currentRoute: ActivatedRoute) {
+    onOpenContent(unitId: number, contentId: number, contentType: string, currentRoute: ActivatedRoute) {
 
         switch(contentType) {
-            case "lesson": this.router.navigate(['lesson', contentId], {relativeTo: currentRoute});
+            case "lesson": this.router.navigate(['unit', unitId, 'content', contentId], {relativeTo: currentRoute});
                             break;
             default: console.log("The content you are trying to open is not a valid type.");
 

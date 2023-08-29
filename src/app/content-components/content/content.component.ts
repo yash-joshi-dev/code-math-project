@@ -11,6 +11,7 @@ import { ActivatedRoute } from '@angular/router';
 })
 export class ContentComponent implements OnInit {
 
+  @Input() unitId: number;
   @Input() contentData: Content;
   @Input() studentProgressView: boolean = false;
   @Output() contentDeleted = new EventEmitter<boolean>();
@@ -24,7 +25,7 @@ export class ContentComponent implements OnInit {
 
   onContentClicked() {
     if(!this.studentProgressView) {
-      this.contentService.onOpenContent(this.contentData.id, this.contentData.type, this.route);
+      this.contentService.onOpenContent(this.unitId, this.contentData.id, this.contentData.type, this.route);
     }
     else {
       //go to non-existent student-content progress page (IFF not a lesson)

@@ -1,5 +1,6 @@
 const express = require('express');
 const dbConnection = require('../db');
+const check_auth = require('../middleware/check_auth');
 const router = express.Router();
 // const checkAuth = require('../middleware/check_auth');
 // const checkTeacher = require('../middleware/check_teacher');
@@ -108,7 +109,7 @@ router.get("/student/:class_id/:student_id", async (req, res, next) => {
 
 })
 
-router.get("/student/:class_id/:unit_id/:student_id", async (req, res, next) => {
+router.get("/student-unit/:class_id/:unit_id/:student_id", async (req, res, next) => {
 
     await dbConnection(async (conn) => {
 
@@ -125,7 +126,7 @@ router.get("/student/:class_id/:unit_id/:student_id", async (req, res, next) => 
 
 })
 
-router.get("/student/:class_id/:content_id/:student_id", async (req, res, next) => {
+router.get("/student-content/:class_id/:content_id/:student_id", async (req, res, next) => {
 
     await dbConnection(async (conn) => {
 
@@ -142,38 +143,54 @@ router.get("/student/:class_id/:content_id/:student_id", async (req, res, next) 
 
 })
 
-router.put("/student/:class_id/:content_id/:student_id", async (req, res, next) => {
+// router.put("/student/:class_id/:content_id/:student_id", async (req, res, next) => {
+
+//     await dbConnection(async (conn) => {
+
+//         const newStatus = req.body.status;
+//         const oldStatus = (await conn.query(`SELECT status FROM student_progress WHERE class_id = ${req.params.class_id} AND content_id = ${req.params.content_id} AND student_id = ${req.params.student_id};`))[0][0].status;
+
+//         //if the content is a lesson, and turning to read, add defs to glossary\
+//         //if turning to unread, remove defs
+//         const contentType = (await conn.query(`SELECT type FROM content WHERE content_id = ${req.params.content_id}`))[0][0].type;
+//         if(newStatus !== oldStatus && contentType === "lesson") {
+//             const definitions = (await conn.query(`SELECT definitions_mapping FROM lessons WHERE id = ${req.params.content_id}`))[0][0].definitions_mapping;
+//             if(newStatus === "read") {
+//                 const newDefinitions = definitions.map((def) => {
+//                     return {
+//                         student_id: req.params.student_id,
+//                         class_id: req.params.class_id,
+//                         definition_id: def
+//                     }
+//                 });
+//                 await conn.query(`INSERT INTO glossary SET ?`, newDefinitions);
+//             }
+//             else if (newStatus === "unread") {
+//                 const oldDefinitions = definitions.join(", ");
+//                 await conn.query(`DELETE FROM glossary WHERE student_id = ${req.params.student_id} AND class_id = ${req.params.class_id} AND definition_id IN (${oldDefinitions})`);
+//             }
+//         }
+
+//         //finally update the status
+//         const sql = `UPDATE student_progress SET ? WHERE class_id = ${req.params.class_id} AND content_id = ${req.params.content_id} AND student_id = ${req.params.student_id};`;
+
+//         await conn.query(sql, {status: newStatus});
+
+//         return res.status(200).json({message: "Successfully updated student progress for this problem."})
+
+//     }, res, 500, "Error retrieving student progress for this problem for this student.")
+
+// })
+
+//called from studend side when they read a problem for the first time
+router.put("/:class_id/:content_id", check_auth, async (req, res, next) => {
 
     await dbConnection(async (conn) => {
 
-        const newStatus = req.body.status;
-        const oldStatus = (await conn.query(`SELECT status FROM student_progress WHERE class_id = ${req.params.class_id} AND content_id = ${req.params.content_id} AND student_id = ${req.params.student_id};`))[0][0].status;
-
-        //if the content is a lesson, and turning to read, add defs to glossary\
-        //if turning to unread, remove defs
-        const contentType = (await conn.query(`SELECT type FROM content WHERE content_id = ${req.params.content_id}`))[0][0].type;
-        if(newStatus !== oldStatus && contentType === "lesson") {
-            const definitions = (await conn.query(`SELECT definitions_mapping FROM lessons WHERE id = ${req.params.content_id}`))[0][0].definitions_mapping;
-            if(newStatus === "read") {
-                const newDefinitions = definitions.map((def) => {
-                    return {
-                        student_id: req.params.student_id,
-                        class_id: req.params.class_id,
-                        definition_id: def
-                    }
-                });
-                await conn.query(`INSERT INTO glossary SET ?`, newDefinitions);
-            }
-            else if (newStatus === "unread") {
-                const oldDefinitions = definitions.join(", ");
-                await conn.query(`DELETE FROM glossary WHERE student_id = ${req.params.student_id} AND class_id = ${req.params.class_id} AND definition_id IN (${oldDefinitions})`);
-            }
-        }
-
         //finally update the status
-        const sql = `UPDATE student_progress SET ? WHERE class_id = ${req.params.class_id} AND content_id = ${req.params.content_id} AND student_id = ${req.params.student_id};`;
+        const sql = `UPDATE student_progress SET ? WHERE class_id = ${req.params.class_id} AND content_id = ${req.params.content_id} AND student_id = ${req.userData.id};`;
 
-        await conn.query(sql, {status: newStatus});
+        await conn.query(sql, {status: "read"});
 
         return res.status(200).json({message: "Successfully updated student progress for this problem."})
 

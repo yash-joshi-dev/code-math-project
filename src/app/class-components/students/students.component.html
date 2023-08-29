@@ -1,1 +1,44 @@
-<p>students works!</p>
+<div class="container d-flex flex-column justify-content-center" style="width: 50%;">
+
+    <div *ngIf="pendingStudents.length > 0" style="margin-top: 50px;">
+        <h1>Pending Students:</h1>
+        <hr>
+        <mat-list>
+            <mat-list-item style="border-bottom: 1px solid rgb(212, 190, 190); margin: 15px 20px auto;" *ngFor="let studentData of pendingStudents; let i = index;">
+                <div style="width: 100%;" class="d-flex justify-content-between">
+                    <div style="width: 100%; margin-top: 10px;">
+                        {{studentData.name}} ({{studentData.emailAddress}})
+                    </div>
+                    <div class="d-flex">
+                        <button (click)="onApproveStudent(studentData.id, i)" mat-icon-button style="color: green; background-color: rgb(212, 255, 224);">
+                            <mat-icon>done</mat-icon>
+                        </button>
+                        <button (click)="onDeleteStudent(studentData.id, i, true)" mat-icon-button style="color: red;">
+                            <mat-icon>close</mat-icon>
+                        </button>
+                    </div>
+                </div>
+            </mat-list-item>
+        </mat-list>
+    </div>
+
+    <h1 style="margin-top: 50px;">Students:</h1>
+    <hr>
+    <h6 *ngIf="classStudents.length === 0">You don't have any students yet...</h6>
+    <div *ngIf="classStudents.length > 0">
+        <mat-list>
+            <mat-list-item style="border-bottom: 1px solid rgb(212, 190, 190); margin: 15px 20px auto;" *ngFor="let studentData of classStudents; let i = index;">
+                <div style="width: 100%;" class="d-flex justify-content-between">
+                    <div style="width: 100%;  margin-top: 10px;">
+                        <p style="display: inline-block; width: 20px;">{{i + 1}}.</p>
+                        {{studentData.name}} ({{studentData.emailAddress}})
+                    </div>
+                    <button (click)="onDeleteStudent(studentData.id, i, false)" mat-icon-button style="color: red">
+                        <mat-icon>close</mat-icon>
+                    </button>
+                </div>
+            </mat-list-item>
+        </mat-list>
+    </div>
+
+</div>

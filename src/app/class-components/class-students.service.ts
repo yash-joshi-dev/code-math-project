@@ -1,6 +1,8 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Student } from './student.model';
+import { map } from 'rxjs';
+import { environment } from 'src/environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class ClassStudentsService {
@@ -9,28 +11,40 @@ export class ClassStudentsService {
   //get all students
   getStudents(classId: number) {
     return this.http.get<{ students: Student[] }>(
-      'http://localhost:3000/api/class-students/' + classId
-    );
+      environment.BACKEND_URL + `/class_students/${classId}`
+    ).pipe(map((response) => {
+      const students = [];
+      response.students.forEach(studentData => {
+        students.push(new Student(studentData));
+      });
+      return students;
+    }));
   }
 
   //get all pending students
   getPendingStudents(classId: number) {
     return this.http.get<{ pendingStudents: Student[] }>(
-      'http://localhost:3000/api/class-students/pending/' + classId
-    );
+      environment.BACKEND_URL + `/class_students/pending/${classId}`
+    ).pipe(map((response) => {
+      const students = [];
+      response.pendingStudents.forEach(studentData => {
+        students.push(new Student(studentData));
+      });
+      return students;
+    }));
   }
 
-  //add pending student
+  //add pending student (only upon join)
   addPendingStudent(classCode: string) {
     return this.http.post(
-      'http://localhost:3000/api/class-students/' + classCode,
+      environment.BACKEND_URL + `/class_students/${classCode}`,
       {}
     );
   }
 
   //approve normal student
   approvePendingStudent(classId: number, studentId: number) {
-    return this.http.patch('http://localhost:3000/api/class-students', {
+    return this.http.patch(environment.BACKEND_URL + `/class_students`, {
       classId: classId,
       studentId: studentId,
     });
@@ -39,7 +53,7 @@ export class ClassStudentsService {
   //delete pending or normal student
   deleteStudent(classId: number, studentId: number) {
     return this.http.delete(
-      'http://localhost:3000/api/class-students/' + classId + '/' + studentId
+      environment.BACKEND_URL + `/class_students/${classId}/${studentId}`
     );
   }
 }

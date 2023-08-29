@@ -24,6 +24,7 @@ export class AssignmentsComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.classData = this.classService.getCurrentClass();
+    console.log(this.classData);
     this.classUpdateSubscription = this.classService
       .getCurrentClassUpdateSubscription()
       .subscribe({

@@ -43,6 +43,7 @@
             <app-content 
                 *ngFor="let contentData of unitData.content; let i = index"
                 [contentData]="contentData"
+                [unitId]="unitData.id"
                 [studentProgressView]="studentProgressView"
                 (contentDeleted)="onContentDeleted(i)"
             ></app-content>

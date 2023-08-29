@@ -69,6 +69,8 @@ import { ContentComponent } from './content-components/content/content.component
 import { DeleteContentModalComponent } from './content-components/delete-content-modal/delete-content-modal.component';
 import { LessonComponent } from './content-components/lesson/lesson.component';
 import { StudentsComponent } from './class-components/students/students.component';
+import { ContentContainerComponent } from './content-components/content-container/content-container.component';
+import {MatSidenavModule} from '@angular/material/sidenav';
 
 
 
@@ -110,6 +112,7 @@ import { StudentsComponent } from './class-components/students/students.componen
         DeleteContentModalComponent,
         LessonComponent,
         StudentsComponent,
+        ContentContainerComponent,
     ],
     imports: [
         BrowserModule,
@@ -139,7 +142,8 @@ import { StudentsComponent } from './class-components/students/students.componen
         TuiAlertModule,
         TuiTableModule,
         TuiSvgModule,
-        EditorModule
+        EditorModule,
+        MatSidenavModule
     ],
     providers: [
         { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },

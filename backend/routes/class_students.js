@@ -13,9 +13,9 @@ const checkInClass = require('../middleware/check_in_class');
 
 //GET all students for a class
 //check authenticating viewing teacher in the class
-router.get('/:class_id', async (req, res, next) => {
+router.get('/:class_id', checkAuth, async (req, res, next) => {
 
-    const sql = `SELECT id, name FROM users WHERE id IN (SELECT student_id FROM class_students WHERE class_id = ${req.params.class_id} AND approved = 1) ORDER BY name`;
+    const sql = `SELECT id, name, email_address FROM users WHERE id IN (SELECT student_id FROM class_students WHERE class_id = ${req.params.class_id} AND approved = 1) ORDER BY name`;
     await dbConnection(async (conn) => {
         let response = await conn.query(sql);
         res.status(201).json({
@@ -26,9 +26,9 @@ router.get('/:class_id', async (req, res, next) => {
 });
 
 //GET all pending students
-router.get('/pending/:class_id', checkAuth, checkTeacher, checkInClass, async (req, res, next) => {
+router.get('/pending/:class_id', checkAuth, async (req, res, next) => {
 
-    const sql = `SELECT id, name FROM users WHERE id IN (SELECT student_id FROM class_students WHERE class_id = ${req.params.class_id} AND approved = 0) ORDER BY name`;
+    const sql = `SELECT id, name, email_address FROM users WHERE id IN (SELECT student_id FROM class_students WHERE class_id = ${req.params.class_id} AND approved = 0) ORDER BY name`;
     await dbConnection(async (conn) => {
         let response = await conn.query(sql);
         res.status(201).json({
@@ -40,7 +40,7 @@ router.get('/pending/:class_id', checkAuth, checkTeacher, checkInClass, async (r
 
 
 //POST to add pending student to the class_students table
-router.post("/:code", checkAuth, checkStudent, async (req, res, next) => {
+router.post("/:code", checkAuth, async (req, res, next) => {
 
     await dbConnection(async (conn) => {
 
@@ -71,7 +71,7 @@ router.post("/:code", checkAuth, checkStudent, async (req, res, next) => {
 
 //add student progress to this
 //patch to approve student into a class
-router.patch("/", checkAuth, checkTeacher, checkInClass, async (req, res, next) => {
+router.patch("/", checkAuth, async (req, res, next) => {
 
     const sql = "UPDATE class_students SET approved=1 WHERE class_id=" + req.body.classId + " AND student_id=" + req.body.studentId;
     await dbConnection(async (conn) => {
@@ -82,20 +82,21 @@ router.patch("/", checkAuth, checkTeacher, checkInClass, async (req, res, next) 
         const newStudentProgressRecords = [];
 
         for(const unit of classUnits) {
-
+            console.log(unit);
             for(const contentId of unit.content_mapping) {
-                const newRecordData = {
-                    student_id: req.body.studentId,
-                    content_id: contentId, 
-                    unit_id: unit.id,
-                    class_id: req.body.classId,
-                    status: "unread",
-                    prev_solutions: JSON.stringify([])
-                }
+                const newRecordData = [
+                    req.body.studentId,
+                    contentId, 
+                    unit.id,
+                    req.body.classId,
+                    "unread",
+                    JSON.stringify([])
+                ]
                 newStudentProgressRecords.push(newRecordData);
             }
         }
-        await conn.query(`INSERT INTO student_progress SET ?`, newStudentProgressRecords);
+        console.log(newStudentProgressRecords);
+        await conn.query(`INSERT INTO student_progress (student_id, content_id, unit_id, class_id, status, prev_solutions) VALUES ?`, [newStudentProgressRecords]);
 
         res.status(200).json({message: "Updated student to be in class."})
     }, res, 401, "Couldn't add student to class.");
@@ -103,12 +104,16 @@ router.patch("/", checkAuth, checkTeacher, checkInClass, async (req, res, next) 
 });
 
 //DELETE from class table (to remove student)
-router.delete("/:class_id/:student_id", checkAuth, checkTeacher, checkInClass, async (req, res, next) => {
+router.delete("/:class_id/:student_id", checkAuth, async (req, res, next) => {
 
     const sql = "DELETE FROM class_students WHERE class_id=" + req.params.class_id + " AND student_id=" + req.params.student_id;
     
     await dbConnection(async (conn) => {
         await conn.query(sql);
+
+        //now delete all student progress for the student
+        await conn.query(`DELETE FROM student_progress WHERE class_id = ${req.params.class_id} AND student_id = ${req.params.student_id}`);
+
         res.status(201).json({
             message: "Student has been deleted."
         })
