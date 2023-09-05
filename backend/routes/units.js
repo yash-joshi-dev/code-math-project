@@ -206,29 +206,33 @@ router.put("/:unit_id", checkAuth, async (req, res, next) => {
             //now get all classes that this unit is in
             const classIds = (await conn.query(`SELECT class_id FROM class_units WHERE unit_id = ${req.params.unit_id}`))[0].map((item) => {return item.class_id});
             let newStudentProgressRecords = []
-
-            for(const classId of classIds) {
+            console.log(classIds);
+            for(var i = 0; i < classIds.length; i++) {
+                const classId = classIds[i];
                 //get all student ids for each class
                 let sql = `SELECT student_id FROM class_students WHERE class_id = ${classId} AND approved = 1`;
                 const studentIds = (await conn.query(sql))[0].map(item => {return item.student_id});
+                console.log(studentIds);
+                for(var j = 0; j < studentIds.length; j++) {
+                    const studentId = studentIds[j];
+                    console.log(contentIds);
+                    for(var k = 0; k < contentIds.length; k++) {
+                        const contentId = contentIds[k];
+                        const newRecordData = [
+                            studentId,
+                            contentId, 
+                            req.params.unit_id,
+                            classId,
+                            "unread"
+                        ]
 
-                for(const studentId of studentIds) {
-                    for(const contentId of contentIds) {
-                        const newRecordData = {
-                            student_id: studentId,
-                            content_id: contentId, 
-                            unit_id: req.params.unit_id,
-                            class_id: classId,
-                            status: "unread",
-                            prev_solutions: JSON.stringify([])
-                        }
                         newStudentProgressRecords.push(newRecordData);
                     }
                 }
             }
 
             //insert all new records
-            if(newStudentProgressRecords.length > 0) {await conn.query(`INSERT INTO student_progress SET ?`, newStudentProgressRecords);}
+            if(newStudentProgressRecords.length > 0) {await conn.query(`INSERT INTO student_progress (student_id, content_id, unit_id, class_id, status) VALUES?`, [newStudentProgressRecords]);}
             
         }
 

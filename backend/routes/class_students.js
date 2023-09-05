@@ -15,7 +15,7 @@ const checkInClass = require('../middleware/check_in_class');
 //check authenticating viewing teacher in the class
 router.get('/:class_id', checkAuth, async (req, res, next) => {
 
-    const sql = `SELECT id, name, email_address FROM users WHERE id IN (SELECT student_id FROM class_students WHERE class_id = ${req.params.class_id} AND approved = 1) ORDER BY name`;
+    const sql = `SELECT id, name, email_address FROM users WHERE id IN (SELECT student_id FROM class_students WHERE class_id = ${req.params.class_id} AND approved = 1) ORDER BY name, id`;
     await dbConnection(async (conn) => {
         let response = await conn.query(sql);
         res.status(201).json({
@@ -89,14 +89,13 @@ router.patch("/", checkAuth, async (req, res, next) => {
                     contentId, 
                     unit.id,
                     req.body.classId,
-                    "unread",
-                    JSON.stringify([])
+                    "unread"
                 ]
                 newStudentProgressRecords.push(newRecordData);
             }
         }
         console.log(newStudentProgressRecords);
-        await conn.query(`INSERT INTO student_progress (student_id, content_id, unit_id, class_id, status, prev_solutions) VALUES ?`, [newStudentProgressRecords]);
+        await conn.query(`INSERT INTO student_progress (student_id, content_id, unit_id, class_id, status) VALUES ?`, [newStudentProgressRecords]);
 
         res.status(200).json({message: "Updated student to be in class."})
     }, res, 401, "Couldn't add student to class.");

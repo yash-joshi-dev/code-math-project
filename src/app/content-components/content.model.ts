@@ -38,11 +38,11 @@ export class Content {
       switch(this.status) {
         case "unread": this.statusIcon = "radio_button_unchecked";
                        break;
-        case "read": this.statusIcon = "done";
+        case "read": this.statusIcon = "timelapse";
                       break;
         case "attempted": this.statusIcon = "timelapse";
                        break;
-        case "solved": this.statusIcon = "done";
+        case "completed": this.statusIcon = "done";
                        break;
         default: this.statusIcon = "adjust";
       }

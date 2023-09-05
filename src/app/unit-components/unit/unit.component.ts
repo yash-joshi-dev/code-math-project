@@ -7,7 +7,7 @@ import { ContentService } from 'src/app/content-components/content.service';
 @Component({
   selector: 'app-unit',
   templateUrl: './unit.component.html',
-  styleUrls: ['./unit.component.css']
+  styleUrls: ['./unit.component.css', './unit.component.less']
 })
 export class UnitComponent implements OnInit {
 
@@ -15,7 +15,8 @@ export class UnitComponent implements OnInit {
   @Input() studentProgressView: boolean = false;
   @Output() unitDeleted = new EventEmitter<boolean>();
   isTeacher: boolean;
-  
+  readonly value = [40, 30, 20, 10];
+
 
   constructor(private contentService: ContentService, private unitService: UnitService, private authService: AuthService) { }
 

@@ -227,21 +227,19 @@ router.post("/:unit_id", checkAuth, async (req, res, next) => {
                 const studentIds = (await conn.query(sql))[0].map(item => {return item.student_id});
                 
                 for(const studentId of studentIds) {
-                    const newRecordData = {
-                        student_id: studentId,
-                        content_id: newContentId, 
-                        unit_id: req.params.unit_id,
-                        class_id: classId,
-                        status: "unread",
-                        prev_solutions: JSON.stringify([])
-                    }
+                    const newRecordData = [
+                        studentId,
+                        newContentId, 
+                        req.params.unit_id,
+                        classId,
+                        "unread"
+                    ]
                     newStudentProgressRecords.push(newRecordData);
                 }
             }
 
             //insert all new records
-            console.log(newStudentProgressRecords);
-            if(newStudentProgressRecords.length > 0) await conn.query(`INSERT INTO student_progress SET ?`, newStudentProgressRecords);
+            if(newStudentProgressRecords.length > 0) {await conn.query(`INSERT INTO student_progress (student_id, content_id, unit_id, class_id, status) VALUES?`, [newStudentProgressRecords]);}
         }
 
         //create right type of problem
@@ -288,6 +286,19 @@ router.get("/:content_id", async (req, res, next) => {
         res.status(200).json({contentData: {...contentData, ...extraContentData}});
 
     }, res, 500, "An error occurred while getting content data.");
+
+})
+
+//get basic content
+router.get("/basic/:content_id", async (req, res, next) => {
+
+    await dbConnection(async (conn) => {
+
+        //get the name, type and tags
+        const contentData = (await conn.query(`SELECT id, name, type, tags FROM content WHERE id = ${req.params.content_id}`))[0][0];
+        res.status(200).json({contentData: contentData});
+    }, res, 500, "An error occurred while getting content data.");
+
 
 })
 

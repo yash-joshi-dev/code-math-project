@@ -71,6 +71,12 @@ import { LessonComponent } from './content-components/lesson/lesson.component';
 import { StudentsComponent } from './class-components/students/students.component';
 import { ContentContainerComponent } from './content-components/content-container/content-container.component';
 import {MatSidenavModule} from '@angular/material/sidenav';
+import { ClassProgressComponent } from './progress-components/class-progress/class-progress.component';
+import {MatTableModule} from '@angular/material/table';
+import {MatRippleModule} from '@angular/material/core';
+import { StudentProgressComponent } from './progress-components/student-progress/student-progress.component';
+import { ContentProgressComponent } from './progress-components/content-progress/content-progress.component';
+import {TuiRingChartModule, TuiPieChartModule} from '@taiga-ui/addon-charts';
 
 
 
@@ -113,6 +119,9 @@ import {MatSidenavModule} from '@angular/material/sidenav';
         LessonComponent,
         StudentsComponent,
         ContentContainerComponent,
+        ClassProgressComponent,
+        StudentProgressComponent,
+        ContentProgressComponent,
     ],
     imports: [
         BrowserModule,
@@ -143,7 +152,11 @@ import {MatSidenavModule} from '@angular/material/sidenav';
         TuiTableModule,
         TuiSvgModule,
         EditorModule,
-        MatSidenavModule
+        MatSidenavModule,
+        MatTableModule,
+        MatRippleModule,
+        TuiRingChartModule,
+        TuiPieChartModule
     ],
     providers: [
         { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },

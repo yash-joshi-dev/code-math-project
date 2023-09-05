@@ -1,0 +1,29 @@
+
+<div class="d-flex justify-content-center">
+
+    <div>
+        <mat-card style="margin: 50px; width: 700px;" class="d-flex justify-content-between">
+            <h1 style="margin: 25px;">{{contentData.name}}</h1>
+            <tui-pie-chart [value]="value"></tui-pie-chart>
+        </mat-card>
+
+        <mat-card style="margin: 50px; width: 700px;">
+            <mat-list>
+                <mat-list-item style="border-bottom: 1px solid rgb(212, 190, 190); margin: 15px 20px auto;" *ngFor="let record of studentProgress; let i = index;">
+                    <div style="width: 100%;" class="d-flex justify-content-between">
+                        <div style="width: 100%; margin-top: 10px;">
+                            {{record.name}}
+                        </div>
+                        <div class="d-flex">
+                            <button mat-icon-button>
+                                <mat-icon>{{record.statusIcon}}</mat-icon>
+                            </button>
+                        </div>
+                    </div>
+                </mat-list-item>
+            </mat-list>
+        </mat-card>
+        
+    </div>
+
+</div>

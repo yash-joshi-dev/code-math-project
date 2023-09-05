@@ -64,6 +64,14 @@ export class ContentService {
         )
     }
 
+    getBasicContent(contentId: number) {
+        return this.http.get<{contentData: any}>(environment.BACKEND_URL + `/content/basic/${contentId}`).pipe(
+            map((response) => {
+                return new Content(response.contentData);
+            })
+        )
+    }
+
     createUnitContent(unitId: number, name: string, type: string, tags: string[], additionalData: any) {
         //name, type, tags, content, definitionsMapping
         return this.http.post<{message: string, newContentData: any}>(environment.BACKEND_URL + `/content/${unitId}`,{

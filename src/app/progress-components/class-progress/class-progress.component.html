@@ -1,0 +1,37 @@
+
+<div class="d-flex justify-content-center">
+    <div class="d-flex flex-column align-content-center">   
+        <div class="d-flex justify-content-center" >
+            <h3 style="padding: 30px;">Student Progress:</h3>
+        </div>
+
+        <div *ngFor="let releasedUnit of releasedUnits; let unitIndex = index">
+            <h5>{{releasedUnit.name}}</h5>
+            <section style="margin: 50px;" class="mat-elevation-z8">
+                <table style="margin: 0px;" *ngIf="!!studentProgress" mat-table [dataSource]="getDataSource(unitIndex)">
+            
+                    <ng-container [matColumnDef]="'Problems'">
+                        <th class = "problem-cell" mat-header-cell *matHeaderCellDef>Problems</th>
+                        <td class = "problem-cell" [routerLink]="'../content-progress/' + releasedUnit.content[rowIndex].id" mat-cell *matCellDef="let statusRow; let rowIndex = index">
+                            {{releasedUnit.content[rowIndex].name}}
+                        </td>
+                    </ng-container>
+            
+                    <ng-container *ngFor="let column of students; let colIndex = index" [matColumnDef]="column.name">
+                        <th mat-header-cell *matHeaderCellDef [routerLink]="'../student-progress/' + column.id">{{ column.name }}</th>
+                        <td mat-cell matRipple *matCellDef="let statusRow; let rowIndex = index" (click)="onClick()">
+                            <mat-icon>
+                                {{ statusRow[colIndex].statusIcon }}
+                            </mat-icon>
+                        </td>
+                    </ng-container>
+                  
+                    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                    <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+                  </table>
+            </section>
+        </div>
+
+</div>
+</div>
+

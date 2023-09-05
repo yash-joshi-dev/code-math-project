@@ -19,6 +19,9 @@ import { ClassGuard } from "./class-components/class.guard";
 import { LessonComponent } from "./content-components/lesson/lesson.component";
 import { StudentsComponent } from "./class-components/students/students.component";
 import { ContentContainerComponent } from "./content-components/content-container/content-container.component";
+import { ClassProgressComponent } from "./progress-components/class-progress/class-progress.component";
+import { StudentProgressComponent } from "./progress-components/student-progress/student-progress.component";
+import { ContentProgressComponent } from "./progress-components/content-progress/content-progress.component";
 
 const appRoutes: Routes = [
     {path: "", component: HomeComponent},
@@ -28,7 +31,9 @@ const appRoutes: Routes = [
     {path: "class/:classId", component: ClassComponent, canActivate: [AuthGuard, ClassGuard], children: [
         {path: "", component: AssignmentsComponent},
         {path: "students", component: StudentsComponent},
-        {path: "progress", component: AssignmentsComponent},
+        {path: "progress", component: ClassProgressComponent},
+        {path: "student-progress/:studentId", component: StudentProgressComponent},
+        {path: "content-progress/:contentId", component: ContentProgressComponent},
         {path: "unit/:unitId/content/:contentId", component: ContentContainerComponent}
     ]},
     // {path: "class/:code/:class_id", component: ClassComponent, canActivate: [AuthGuard], children: [

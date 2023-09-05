@@ -100,16 +100,20 @@ export class ContentContainerComponent implements OnInit, OnDestroy {
     //if person is a student and status for this problem is unread, set timer to set it to read
     if(this.authService.getIsStudent() && this.contentData.status === "unread") {
 
-      this.statusTimeoutId = setTimeout(() => {
-        this.progressService.setProgressToRead(this.contentId).subscribe({
-          next: (response) => {
-            this.contentData.status = "read";
-            console.log("the status of the rpoblem is now read");
-          }
-        });
-      }, 10000) as any;
+      this.setupStatusTimer();
 
     }
+  }
+
+  private setupStatusTimer() {
+    this.statusTimeoutId = setTimeout(() => {
+      this.progressService.setProgressToRead(this.contentId).subscribe({
+        next: (response) => {
+          if (this.contentData.type === "lesson") this.contentData.status = "completed";
+          else this.contentData.status = "read";
+        }
+      });
+    }, 10000) as any;
   }
 
   ngOnDestroy(): void {

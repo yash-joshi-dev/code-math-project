@@ -1,8 +1,7 @@
 <mat-card class="unit-card">
     <mat-card-header class="d-flex justify-content-between">
         <mat-card-title>{{unitData.name}}</mat-card-title>
-
-        <div *ngIf="isTeacher && !studentProgressView">
+        <div *ngIf="isTeacher && !studentProgressView; else studentProgress">
             <button mat-icon-button aria-label="View Unit Progress">
                 <mat-icon>bar_chart</mat-icon>
             </button>
@@ -37,6 +36,14 @@
                 (deleteClick)="onDeleteUnit()"
             ></app-edit-menu>
         </div>
+        <ng-template #studentProgress>
+            <tui-ring-chart
+            size="s"
+            class="tui-space_right-4"
+            [value]="value"
+            style="margin-bottom: 5px;"
+        ></tui-ring-chart>
+        </ng-template>
     </mat-card-header>
     <mat-card-content>
         <mat-list>

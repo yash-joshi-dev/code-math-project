@@ -1,0 +1,23 @@
+
+  .mat-cell {
+    padding: 20px;
+    text-align: center;
+    border-left: 1px solid rgb(188, 181, 181);
+    border-right: 1px solid rgb(188, 181, 181);
+  }
+
+  .mat-header-cell {
+    text-align: center;
+    padding: 20px;
+
+    border-left: 1px solid rgb(188, 181, 181);
+    border-right: 1px solid rgb(188, 181, 181);
+    border-bottom: 1px solid black;
+    
+  }
+
+  .problem-cell {
+    border-right: 1px solid black;
+    padding: 20px;
+    border-left: 1px solid rgb(188, 181, 181);
+  }

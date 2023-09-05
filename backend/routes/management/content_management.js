@@ -29,20 +29,19 @@ router.post("/:unit_id/:content_id", async (req, res, next) => {
                 const studentIds = (await conn.query(sql)).map(item => {return item.student_id});
 
                 for(const studentId of studentIds) {
-                    const newRecordData = {
-                        student_id: studentId,
-                        content_id: req.params.content_id, 
-                        unit_id: req.params.unit_id,
-                        class_id: classId,
-                        status: "unread",
-                        prev_solutions: JSON.stringify([])
-                    }
+                    const newRecordData = [
+                        studentId,
+                        req.params.content_id, 
+                        req.params.unit_id,
+                        classId,
+                        "unread"
+                    ]
                     newStudentProgressRecords.push(newRecordData);
                 }
             }
 
             //insert all new records
-            await conn.query(`INSERT INTO student_progress SET ?`, newStudentProgressRecords);
+            if(newStudentProgressRecords.length > 0) {await conn.query(`INSERT INTO student_progress (student_id, content_id, unit_id, class_id, status) VALUES?`, [newStudentProgressRecords]);}
         }
 
         //add to unit's content mapping 

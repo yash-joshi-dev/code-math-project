@@ -29,7 +29,7 @@
         <mat-list>
             <mat-list-item style="border-bottom: 1px solid rgb(212, 190, 190); margin: 15px 20px auto;" *ngFor="let studentData of classStudents; let i = index;">
                 <div style="width: 100%;" class="d-flex justify-content-between">
-                    <div style="width: 100%;  margin-top: 10px;">
+                    <div [routerLink]="'../student-progress/' + studentData.id" style="width: 100%;  margin-top: 10px;">
                         <p style="display: inline-block; width: 20px;">{{i + 1}}.</p>
                         {{studentData.name}} ({{studentData.emailAddress}})
                     </div>
