@@ -59,16 +59,16 @@ router.get("/tags", async (req, res, next) => {
 
 //check if authenticated teacher trying to do this
 //GET all content for a teacher, can also differentiate by class_id, unit_id, and/or tags, and whether we want lessons or problems
-router.get("/", async (req, res, next) => {
+router.get("/", checkAuth, async (req, res, next) => {
 
     await dbConnection(async (conn) => {
 
         //conditions for each query parameter
         const conditions = [];
-        if(req.query.class_id) conditions.push(`class_units.class_id = ${req.query.class_id}`);
-        if(req.query.unit_id)  conditions.push(`class_units.unit_id = ${req.query.unit_id}`);
+        if(req.query.class_id !== "undefined") conditions.push(`class_units.class_id = ${req.query.class_id}`);
+        if(req.query.unit_id !== "undefined")  conditions.push(`class_units.unit_id = ${req.query.unit_id}`);
         if(req.query.tags) conditions.push(`content.id IN (SELECT tags.content_ids FROM tags WHERE tag IN (${req.query.tags.join(", ")}))`);
-        if(req.query.content_type) conditions.push(`content.type = ${req.query.content_type}`);
+        if(req.query.content_type !== "undefined") conditions.push(`content.type = "${req.query.content_type}"`);
 
         conditions.push(`content_owners.teacher_id = ${req.userData.id}`);
 
@@ -89,7 +89,7 @@ router.get("/", async (req, res, next) => {
 })
 
 //create a new piece of content in a teachers library
-router.post("/", async(req, res, next) => {
+router.post("/", checkAuth, async(req, res, next) => {
 
     const newContentData = {
         name: req.body.name,
@@ -104,12 +104,12 @@ router.post("/", async(req, res, next) => {
 
         //add tags into tags table
         let tags = req.body.tags.map(item => {
-            return {
-                content_id: newContentId,
-                tag: item
-            }
+            return [
+                newContentId,
+                item
+            ]
         })
-        await conn.query(`INSERT INTO content_tags SET ?`, tags);
+        await conn.query(`INSERT INTO content_tags (content_id, tag) VALUES ?`, [tags]);
 
         //add any new tags into teacher's thing
         let currentTags = (await conn.query(`SELECT tag FROM tags WHERE teacher_id = ${req.userData.id} OR teacher_id = -1`))[0];
@@ -118,11 +118,11 @@ router.post("/", async(req, res, next) => {
         req.body.tags.forEach(tag => {
             
             if(!currentTags.includes(tag)) {
-                newTags.push({teacher_id: req.userData.id, tag: tag});
+                newTags.push([req.userData.id, tag]);
             }
 
         });
-        await conn.query(`INSERT INTO tags SET ?`, newTags);
+        await conn.query(`INSERT INTO tags (teacher_id, tag) VALUES ?`, [newTags]);
 
         //now add new record in content owners table
         await conn.query('INSERT INTO content_owners SET ?', {teacher_id: req.userData.id, content_id: newContentId});
@@ -171,13 +171,14 @@ router.post("/:unit_id", checkAuth, async (req, res, next) => {
 
         //add tags into tags table
         if(req.body.tags.length > 0) {
+            //add tags into tags table
             let tags = req.body.tags.map(item => {
-                return {
-                    content_id: newContentId,
-                    tag: item
-                }
+                return [
+                    newContentId,
+                    item
+                ]
             })
-            await conn.query(`INSERT INTO content_tags SET ?`, tags);
+            await conn.query(`INSERT INTO content_tags (content_id, tag) VALUES ?`, [tags]);
         }
         
 
@@ -189,20 +190,23 @@ router.post("/:unit_id", checkAuth, async (req, res, next) => {
         req.body.tags.forEach(tag => {
             
             if(!currentTags.includes(tag)) {
-                newTags.push({teacher_id: req.userData.id, tag: tag});
+                newTags.push([req.userData.id, tag]);
             }
 
         });
         if(newTags.length > 0) {
-            await conn.query(`INSERT INTO tags SET ?`, newTags);
+            await conn.query(`INSERT INTO tags (teacher_id, tag) VALUES ?`, [newTags]);
         }
 
         //for every teacher owning the unit, insert them as an owner with their rights
         const unitOwners = (await conn.query(`SELECT teacher_id, rights FROM unit_owners WHERE unit_id = ${req.params.unit_id}`))[0];
-            
+        let newContentOwnerRecords = [];
         for(let i = 0; i < unitOwners.length; i++) {
             const unitOwner = unitOwners[i];
-            await conn.query('INSERT INTO content_owners SET ?', {teacher_id: unitOwner.teacher_id, rights: unitOwner.rights, is_owner: (unitOwner.teacher_id === req.userData.id ? 1 : 0), content_id: newContentId});
+            newContentOwnerRecords.push([unitOwner.teacher_id, unitOwner.rights, (unitOwner.teacher_id === req.userData.id ? 1 : 0), newContentId]);
+        }
+        if(newContentOwnerRecords.length > 0) {
+            await conn.query(`INSERT INTO content_owners (teacher_id, rights, is_owner, content_id) VALUES ?`, [newContentOwnerRecords])
         }
         
 
@@ -329,12 +333,12 @@ router.put("/:content_id", async (req, res, next) => {
         //update tags by deleting all for content, then adding all new ones into tags table
         await conn.query(`DELETE FROM content_tags WHERE id = ${req.params.content_id}`);
         let tags = req.body.tags.map(item => {
-            return {
-                content_id: req.params.content_id,
-                tag: item
-            }
+            return [
+                req.params.content_id,
+                item
+            ]
         })
-        if(tags.length > 0) {await conn.query(`INSERT INTO content_tags SET ?`, tags);}
+        if(tags.length > 0) {await conn.query(`INSERT INTO content_tags (content_id, tag) VALUES ?`, [tags]);}
 
         //update every student progress record for this content to unread where the unit its in has been released
         //but since only for released units are records present, that check is unecessary

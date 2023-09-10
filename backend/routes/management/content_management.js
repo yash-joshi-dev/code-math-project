@@ -1,16 +1,28 @@
 const express = require('express');
 const dbConnection = require('../../db');
 const router = express.Router();
+const checkAuth = require("../../middleware/check_auth");
 
 
 //add content to unit
 //only add authenticated teacher with editing rights
-router.post("/:unit_id/:content_id", async (req, res, next) => {
+router.post("/:unit_id/:content_id", checkAuth, async (req, res, next) => {
 
     await dbConnection(async (conn) => {
 
         //add to unit_content table
         await conn.query(`INSERT INTO unit_content SET unit_id = ${req.params.unit_id}, content_id = ${req.params.content_id}`);
+
+        //for every teacher owning the unit, insert them as an owner with their rights
+        const unitOwners = (await conn.query(`SELECT teacher_id, rights FROM unit_owners WHERE unit_id = ${req.params.unit_id}`))[0];
+        let newContentOwnerRecords = [];
+        for(let i = 0; i < unitOwners.length; i++) {
+            const unitOwner = unitOwners[i];
+            newContentOwnerRecords.push([unitOwner.teacher_id, unitOwner.rights, (unitOwner.teacher_id === req.userData.id ? 1 : 0), req.params.content_id]);
+        }
+        if(newContentOwnerRecords.length > 0) {
+            await conn.quer(`INSERT INTO content_owners (teacher_id, rights, is_owner, content_id) VALUES ?`, [newContentOwnerRecords])
+        }
 
         //if unit is released, add student progress for this content for every student in every class this unit is in
 
@@ -55,12 +67,14 @@ router.post("/:unit_id/:content_id", async (req, res, next) => {
 
 //delete content from unit
 //only allow authenticated teacher with editing rights
-router.delete("/:unit_id/:content_id", async (req, res, next) => {
+router.delete("/:unit_id/:content_id", checkAuth, async (req, res, next) => {
 
     await dbConnection(async (conn) => {
 
         //delete from unit content table
-        await conn.query(`DELETE FROM unit_content WHERE unit_id = ${req.params.unit_id} AND content_id = ${req.params.content_id}`)
+        await conn.query(`DELETE FROM unit_content WHERE unit_id = ${req.params.unit_id} AND content_id = ${req.params.content_id}`);
+
+        //DONT DELETE ALL CONTENT OWNERS FOR THIS UNIT, ASK TEACHER ABOUT THIS
 
         //delete all progress from student progress if unit was released (but this check would be redundant as it wouldn't be there in the first place)
         await conn.query(`DELETE FROM student_progress WHERE unit_id = ${req.params.unit_id} AND content_id = ${req.params.content_id}`)

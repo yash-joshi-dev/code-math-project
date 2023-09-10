@@ -1,4 +1,4 @@
-import { HttpClient } from "@angular/common/http";
+import { HttpClient, HttpParams } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { MatDialog } from "@angular/material/dialog";
 import { environment } from "src/environments/environment";
@@ -18,10 +18,13 @@ export class ContentService {
 
     onOpenContent(unitId: number, contentId: number, contentType: string, currentRoute: ActivatedRoute) {
 
+        //if unitId undefined, means outside unit, so just navigate to thing directly
+        //otherwise go through unit
+
         switch(contentType) {
             case "lesson": this.router.navigate(['unit', unitId, 'content', contentId], {relativeTo: currentRoute});
                             break;
-            default: console.log("The content you are trying to open is not a valid type.");
+            default: console.log("Thes content you are trying to open is not a valid type.");
 
         }
 
@@ -60,6 +63,22 @@ export class ContentService {
             map((response) => {
                 //can't do anything here other than return data directly
                 return response.contentData;
+            })
+        )
+    }
+
+    getAllContent(contentType: string | undefined, classId: number | undefined, unitId: number | undefined) {
+        let params = new HttpParams();
+        params = params.set('content_type', contentType);
+        params = params.set('class_id', classId);
+        params = params.set('unit_id', unitId);
+
+        return this.http.get<{content: any[]}>(environment.BACKEND_URL + "/content", {params}).pipe(
+            map((response) => {
+                let content: Content [] = [];
+
+                response.content.forEach((item) => {content.push(new Content(item));});
+                return content;
             })
         )
     }

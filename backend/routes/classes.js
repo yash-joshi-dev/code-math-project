@@ -23,6 +23,18 @@ function generateRandCode() {
   return code;
 }
 
+//get all class names and ids (super basic info)
+router.get("/basic", checkAuth, async (req, res, next) => {
+  
+  await dbConnection(async (conn) => {
+
+    const basicClassesInfo = (await conn.query(`SELECT name, id FROM classes WHERE id IN (SELECT class_id FROM class_owners WHERE teacher_id = ${req.userData.id})`))[0];
+    res.status(200).json({classesBasicInfo: basicClassesInfo});
+
+  }, res, 500, "Couldn't get basic info for classes.")
+
+})
+
 //get all classes for a particular teacher or student
 //check auth
 router.get("/", checkAuth, async (req, res, next) => {

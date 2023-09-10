@@ -1,11 +1,12 @@
 const express = require('express');
 const dbConnection = require('../../db');
 const { shareClass } = require('./sharing_functions');
+const check_auth = require('../../middleware/check_auth');
 const router = express.Router();
 
 //get all teachers with their rights and owner for a particular class
 //only allow authenticated teachers in the class
-router.get("/:class_id", async (req, res, next) => {
+router.get("/:class_id", check_auth, async (req, res, next) => {
 
     const sql = `SELECT users.id, users.name, users.email_address, class_owners.teacher_id, class_owners.rights, class_owners.is_owner
                 FROM users INNER JOIN class_owners ON users.id = class_owners.teacher_id
@@ -23,7 +24,7 @@ router.get("/:class_id", async (req, res, next) => {
 
 //share class with another teacher
 //only allow if teacher is owner?
-router.post("/:class_id", async (req, res, next) => {
+router.post("/:class_id", check_auth, async (req, res, next) => {
 
     //get teacher data using the email
     let sql = `SELECT id, name FROM users WHERE role = "teacher" AND email_address = "${req.body.teacherEmail}"`
@@ -58,7 +59,7 @@ router.post("/:class_id", async (req, res, next) => {
 
 //unshare class with another teacher
 //check if teacher is owner? and authenticated and this teacher exists in the class
-router.delete("/:class_id/:teacher_id", async(req, res, next) => {
+router.delete("/:class_id/:teacher_id", check_auth, async(req, res, next) => {
 
     await dbConnection(async (conn) => {
 
@@ -76,7 +77,7 @@ router.delete("/:class_id/:teacher_id", async(req, res, next) => {
 
             const contentMapping = (await conn.query(`SELECT content_mapping FROM units WHERE id = ${unitId}`))[0][0].content_mapping;
             if(contentMapping.length > 0) {
-                await conn.query(`DELET FROM content_owners WHERE content_id IN ${contentMapping.join(", ")} AND teacher_id = ${req.params.teacher_id}`);
+                await conn.query(`DELETE FROM content_owners WHERE content_id IN ${contentMapping.join(", ")} AND teacher_id = ${req.params.teacher_id}`);
             }
 
         }

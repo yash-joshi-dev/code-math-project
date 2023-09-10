@@ -7,6 +7,7 @@ import { MatDialog } from "@angular/material/dialog";
 import { EditUnitModalComponent } from "./edit-unit-modal/edit-unit-modal.component";
 import { DeleteUnitModalComponent } from "./delete-unit-modal/delete-unit-modal.component";
 import { CreateUnitModalComponent } from "./create-unit-modal/create-unit-modal.component";
+import { string } from "blockly/core/utils";
 
 
 @Injectable({ providedIn: 'root' })
@@ -40,6 +41,9 @@ export class UnitService {
   //-------------------------------------------------------------MAIN UNIT ROUTES
 
   //get all units for a teacher (do later)
+  getUnitsBasicInfo() {
+    return this.http.get<{unitsBasicInfo: {name: string, id: number} []}>(environment.BACKEND_URL + '/units/basic');
+  }
 
   //create unit (do later)
   //create unit in class (important)

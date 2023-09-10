@@ -77,6 +77,7 @@ import {MatRippleModule} from '@angular/material/core';
 import { StudentProgressComponent } from './progress-components/student-progress/student-progress.component';
 import { ContentProgressComponent } from './progress-components/content-progress/content-progress.component';
 import {TuiRingChartModule, TuiPieChartModule} from '@taiga-ui/addon-charts';
+import { ContentLibraryComponent } from './library-components/content-library/content-library.component';
 
 
 
@@ -122,6 +123,7 @@ import {TuiRingChartModule, TuiPieChartModule} from '@taiga-ui/addon-charts';
         ClassProgressComponent,
         StudentProgressComponent,
         ContentProgressComponent,
+        ContentLibraryComponent,
     ],
     imports: [
         BrowserModule,

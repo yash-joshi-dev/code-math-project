@@ -22,6 +22,7 @@ import { ContentContainerComponent } from "./content-components/content-containe
 import { ClassProgressComponent } from "./progress-components/class-progress/class-progress.component";
 import { StudentProgressComponent } from "./progress-components/student-progress/student-progress.component";
 import { ContentProgressComponent } from "./progress-components/content-progress/content-progress.component";
+import { ContentLibraryComponent } from "./library-components/content-library/content-library.component";
 
 const appRoutes: Routes = [
     {path: "", component: HomeComponent},
@@ -36,6 +37,7 @@ const appRoutes: Routes = [
         {path: "content-progress/:contentId", component: ContentProgressComponent},
         {path: "unit/:unitId/content/:contentId", component: ContentContainerComponent}
     ]},
+    {path: "content-library", component: ContentLibraryComponent, canActivate: [AuthGuard]},
     // {path: "class/:code/:class_id", component: ClassComponent, canActivate: [AuthGuard], children: [
     //     {path: "class-list", component: ClassListComponent, canActivate: [TeacherGuard]},
     //     {path: "create-block-problem", component: CreateBlockProblemComponent, canActivate: [TeacherGuard], children: [

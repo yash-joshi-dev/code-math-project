@@ -1,0 +1,51 @@
+<div class="d-flex flex-column align-items-center">
+    <h1 style="margin: 50px;">Content Library</h1>
+
+
+    <mat-card>
+        <div class="d-flex justify-content-between" style="width: 700px;">
+            <mat-form-field>
+                <mat-label>Content Type</mat-label>
+                <mat-select [(value)]="currentType" (selectionChange)="onTypeSelectionChange()">
+                    <mat-option>All</mat-option>
+                  <mat-option *ngFor="let type of types" [value]="type">
+                    {{type}}
+                  </mat-option>
+                </mat-select>
+              </mat-form-field>
+    
+              <mat-form-field>
+                <mat-label>Class</mat-label>
+                <mat-select [(value)]="currentClassId" (selectionChange)="onClassSelectionChange()">
+                    <mat-option>Any</mat-option>
+                  <mat-option *ngFor="let class of classes" [value]="class.id">
+                    {{class.name}}
+                  </mat-option>
+                </mat-select>
+              </mat-form-field>
+    
+              <mat-form-field>
+                <mat-label>Unit</mat-label>
+                <mat-select [(value)]="currentUnitId" (selectionChange)="onUnitSelectionChange()">
+                    <mat-option>Any</mat-option>
+                  <mat-option *ngFor="let unit of units" [value]="unit.id">
+                    {{unit.name}}
+                  </mat-option>
+                </mat-select>
+              </mat-form-field>
+        </div>
+        <hr>
+        <mat-card-content>
+            <mat-list>
+                <app-content 
+                    *ngFor="let contentData of content; let i = index"
+                    [contentData]="contentData"
+                    (contentDeleted)="onContentDeleted(i)"
+                ></app-content>
+            </mat-list>
+        </mat-card-content>
+    </mat-card>
+    
+    
+
+</div>

@@ -1,11 +1,12 @@
 const express = require('express');
 const dbConnection = require('../../db');
 const { shareUnit } = require('./sharing_functions');
+const check_auth = require('../../middleware/check_auth');
 const router = express.Router();
 
 //get all teachers with their rights and owner for a particular unit
 //only allow authenticated teachers that have the unit shared
-router.get("/:unit_id", async (req, res, next) => {
+router.get("/:unit_id", check_auth, async (req, res, next) => {
 
     const sql = `SELECT users.name, unit_owners.teacher_id, unit_owners.rights, unit_owners.is_owner
                 FROM users INNER JOIN unit_owners ON users.id = unit_owners.teacher_id
@@ -23,7 +24,7 @@ router.get("/:unit_id", async (req, res, next) => {
 
 //share unit with another teacher
 //only allow if teacher is owner?
-router.post("/:unit_id", async (req, res, next) => {
+router.post("/:unit_id", check_auth, async (req, res, next) => {
 
     await dbConnection(async (conn) => {
 
@@ -43,11 +44,15 @@ router.post("/:unit_id", async (req, res, next) => {
 //change rights for another teacher
 //only allow if teacher is owner? and authenticated
 //confusion on whether or not to update also content rights when this is updated - PLEASE ASK TEACHER ABOUT THIS
-router.patch("/:unit_id/:teacher_id", async (req, res, next) => {
+router.patch("/:unit_id/:teacher_id", check_auth, async (req, res, next) => {
 
     await dbConnection(async (conn) => {
         await conn.query(`UPDATE unit_owners SET rights = "${req.body.rights}" WHERE unit_id = ${req.params.unit_id} AND teacher_id = ${req.params.teacher_id}`);
 
+        const contentMapping = (await conn.query(`SELECT content_mapping FROM units WHERE id = ${req.params.unit_id}`))[0][0].content_mapping;
+        if(contentMapping.length > 0) {
+            await conn.query(`UPDATE content_owners SET rights = "${req.body.rights}" WHERE content_id IN ${contentMapping.join(", ")} AND teacher_id = ${req.params.teacher_id}`);
+        }
 
         res.status(200).json({message: "Successfully update teacher rights."})
     }, res, 500, "Updating teacher rights failed.")
@@ -56,7 +61,7 @@ router.patch("/:unit_id/:teacher_id", async (req, res, next) => {
 
 //unshare unit with another teacher
 //check if teacher is owner? and authenticated and this teacher exists as a owner for the unit
-router.delete("/:unit_id/:teacher_id", async(req, res, next) => {
+router.delete("/:unit_id/:teacher_id", check_auth, async(req, res, next) => {
 
     await dbConnection(async (conn) => {
 
@@ -64,7 +69,7 @@ router.delete("/:unit_id/:teacher_id", async(req, res, next) => {
 
         const contentMapping = (await conn.query(`SELECT content_mapping FROM units WHERE id = ${req.params.unit_id}`))[0][0].content_mapping;
         if(contentMapping.length > 0) {
-            await conn.query(`DELET FROM content_owners WHERE content_id IN ${contentMapping.join(", ")} AND teacher_id = ${req.params.teacher_id}`);
+            await conn.query(`DELETE FROM content_owners WHERE content_id IN ${contentMapping.join(", ")} AND teacher_id = ${req.params.teacher_id}`);
         }
 
         res.status(200).json({message: "Un-shared with teacher successfully."})

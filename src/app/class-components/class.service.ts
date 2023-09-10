@@ -48,6 +48,10 @@ export class ClassService {
 
   //--------------------------------------------------------------------MAIN CLASS ROUTES
 
+  getClassesBasicInfo() {
+    return this.http.get<{classesBasicInfo: {name: string, id: number} []}>(environment.BACKEND_URL + `/classes/basic`);
+  }
+
   getCurrentClass() {
     return this.currentClass;
   }

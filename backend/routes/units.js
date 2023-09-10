@@ -13,16 +13,16 @@ const check_auth = require('../middleware/check_auth');
 // for /units/:unit_id, have GET, PUT, DELETE
 
 //check if person is authenticated teacher - but why?
-router.get("/", async (req, res, next) => {
+router.get("/basic", check_auth, async (req, res, next) => {
 
     //get all units for a teacher in alpha order
-    let sql = `SELECT id, name, is_released FROM units WHERE id IN (SELECT units_id FROM unit_owners WHERE teacher_id = ${req.userData.id}) ORDER BY name`;
+    let sql = `SELECT id, name FROM units WHERE id IN (SELECT unit_id FROM unit_owners WHERE teacher_id = ${req.userData.id}) ORDER BY name`;
 
     await dbConnection(async (conn) => {
         
         const units = (await conn.query(sql))[0];
         res.status(201).json({
-            units: units
+            unitsBasicInfo: units
         })
 
     }, res, 500, "Couldn't get units for some reason.")
@@ -145,16 +145,16 @@ router.post("/:class_id", checkAuth, async (req, res, next) => {
 
             const classOwner = classOwners[i];
 
-            const newRecordData = {
-                unit_id: newUnitId,
-                teacher_id: classOwner.teacher_id,
-                rights: classOwner.rights,
-                is_owner: (classOwner.teacher_id === req.userData.id ? 1 : 0)
-            }
+            const newRecordData = [
+                newUnitId,
+                classOwner.teacher_id,
+                classOwner.rights,
+                (classOwner.teacher_id === req.userData.id ? 1 : 0)
+            ]
 
             newUnitOwnerRecords.push(newRecordData);
         }
-        await conn.query(`INSERT INTO unit_owners SET ?`, newUnitOwnerRecords);
+        await conn.query(`INSERT INTO unit_owners (unit_id, teacher_id, rights, is_owner) VALUES ?`, [newUnitOwnerRecords]);
 
 
         //add unit to unit mapping for class

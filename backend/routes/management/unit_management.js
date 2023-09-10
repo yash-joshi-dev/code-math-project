@@ -1,17 +1,36 @@
 const express = require('express');
 const dbConnection = require('../../db');
 const router = express.Router();
+const checkAuth = require('../../middleware/check_auth')
 
 
 //add a unit to a class
 //only an authenticated teacher with editing rights
-router.post("/:class_id/:unit_id", async (req, res, next) => {
+router.post("/:class_id/:unit_id", checkAuth, async (req, res, next) => {
 
     await dbConnection(async (conn) => {
 
         //add the unit to the class units table
         await conn.query(`INSERT INTO class_units SET class_id = ${req.params.class_id}, unit_id = ${req.params.unit_id}`);
 
+        //get all teachers that own this class and add them as unit owners with their respective rights
+        //for each teacher in the class, add new record into unit owner table
+        const classOwners = (await conn.query(`SELECT teacher_id, rights FROM class_owners WHERE class_id = ${req.params.class_id}`))[0];
+        const newUnitOwnerRecords = [];
+        for(let i = 0; i < classOwners.length; i++) {
+
+            const classOwner = classOwners[i];
+
+            const newRecordData = [
+                req.params.unit_id,
+                classOwner.teacher_id,
+                classOwner.rights,
+                (classOwner.teacher_id === req.userData.id ? 1 : 0)
+            ]
+
+            newUnitOwnerRecords.push(newRecordData);
+        }
+        await conn.query(`INSERT INTO unit_owners (unit_id, teacher_id, rights, is_owner) VALUES ?`, [newUnitOwnerRecords]);
 
         //get the data for the unit and see if its released; if it is, create a student progress record for every student in the class for every content in the unit
         const isReleased = (await conn.query(`SELECT is_released FROM units WHERE unit_id = ${req.params.unit_id}`))[0][0].is_released;
@@ -57,7 +76,7 @@ router.post("/:class_id/:unit_id", async (req, res, next) => {
 })
 
 //remove a unit from a class
-router.delete("/:class_id/:unit_id", async (req, res, next) => {
+router.delete("/:class_id/:unit_id", checkAuth, async (req, res, next) => {
 
     await dbConnection(async (conn) => {
         
